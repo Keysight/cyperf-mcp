@@ -1,0 +1,16 @@
+{
+  "default_profile": "lab1",
+  "profiles": {
+    "lab1": {
+      "host": "https://10.36.75.100",
+      "refresh_token": "eyJhbGciOi...",
+      "verify_ssl": false
+    },
+    "cloud": {
+      "host": "https://cyperf-cloud.example.com",
+      "username": "admin",
+      "password": "secret",
+      "verify_ssl": true
+    }
+  }
+}

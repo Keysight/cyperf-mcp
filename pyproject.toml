@@ -1,0 +1,16 @@
+[project]
+name = "cyperf-mcp"
+version = "0.1.0"
+description = "MCP server for Keysight CyPerf network testing platform"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "cyperf>=1.0.0",
+]
+
+[project.scripts]
+cyperf-mcp = "cyperf_mcp.cyperf_mcp_server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

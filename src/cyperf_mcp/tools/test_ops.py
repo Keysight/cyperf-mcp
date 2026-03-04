@@ -126,22 +126,16 @@ def register(mcp, client: CyPerfClientManager):
         return tools.abort(session_id)
 
     @mcp.tool()
-    def test_calibrate_start(session_id: str) -> dict:
-        """[Test Operations] Start test calibration.
+    def test_calibrate(session_id: str, action: str = "start") -> dict:
+        """[Test Operations] Start or stop test calibration.
 
         Args:
             session_id: The session identifier
+            action: 'start' or 'stop' (default: 'start')
         """
+        if action == "stop":
+            return tools.calibrate_stop(session_id)
         return tools.calibrate_start(session_id)
-
-    @mcp.tool()
-    def test_calibrate_stop(session_id: str) -> dict:
-        """[Test Operations] Stop test calibration.
-
-        Args:
-            session_id: The session identifier
-        """
-        return tools.calibrate_stop(session_id)
 
     @mcp.tool()
     def test_init(session_id: str) -> dict:

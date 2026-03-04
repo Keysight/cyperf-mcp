@@ -121,23 +121,4 @@ def register(mcp, client: CyPerfClientManager):
         """
         return tools.ingest(operation_data)
 
-    @mcp.tool()
-    def stats_get_result_stats(result_id: str, take: int = None, skip: int = None) -> dict:
-        """[Statistics] Get statistics for a test result.
-
-        Args:
-            result_id: The test result identifier
-            take: Number of stats to return
-            skip: Number of stats to skip
-        """
-        return tools.get_result_stats(result_id, take, skip)
-
-    @mcp.tool()
-    def stats_get_result_stat(result_id: str, stat_id: str) -> dict:
-        """[Statistics] Get a specific statistic by name from a test result.
-
-        Args:
-            result_id: The test result identifier
-            stat_id: The statistic name/identifier
-        """
-        return tools.get_result_stat(result_id, stat_id)
+    # Note: result stats are available via results_stats tool to avoid duplication.

@@ -177,13 +177,15 @@ def register(mcp, client: CyPerfClientManager):
         return tools.get(agent_id)
 
     @mcp.tool()
-    def agents_delete(agent_id: str) -> dict:
-        """[Agents] Delete a CyPerf agent.
+    def agents_delete(agent_ids: list[str]) -> dict:
+        """[Agents] Delete one or more CyPerf agents.
 
         Args:
-            agent_id: The agent identifier to delete
+            agent_ids: List of agent IDs to delete (single or multiple)
         """
-        return tools.delete(agent_id)
+        if len(agent_ids) == 1:
+            return tools.delete(agent_ids[0])
+        return tools.batch_delete(agent_ids)
 
     @mcp.tool()
     def agents_update(agent_id: str, properties: dict) -> dict:
@@ -194,15 +196,6 @@ def register(mcp, client: CyPerfClientManager):
             properties: Dict of agent properties to update (e.g. name, tags)
         """
         return tools.update(agent_id, properties)
-
-    @mcp.tool()
-    def agents_batch_delete(agent_ids: list[str]) -> dict:
-        """[Agents] Batch delete multiple agents.
-
-        Args:
-            agent_ids: List of agent IDs to delete
-        """
-        return tools.batch_delete(agent_ids)
 
     @mcp.tool()
     def agents_reserve(agent_ids: list[str]) -> dict:

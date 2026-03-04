@@ -148,10 +148,25 @@ class LicensingTools:
             return handle_exception(e)
 
     def add_server(self, server_data: dict):
+        import time
         try:
             server = cyperf.LicenseServerMetadata(**server_data)
-            result = self.servers_api.create_license_servers(servers=[server])
-            return serialize_response(result)
+            result = self.servers_api.create_license_servers(license_servers=[server])
+            if not result:
+                return {"result": "License server created (no details returned)"}
+            server_id = str(result[0].id)
+            latest = result[0]
+            for _ in range(60):
+                time.sleep(2)
+                servers = self.servers_api.get_license_servers()
+                for s in servers:
+                    if str(s.id) == server_id:
+                        latest = s
+                        if s.connection_status != 'IN_PROGRESS':
+                            return serialize_response(s)
+                        break
+            # Timed out, return latest state
+            return serialize_response(latest)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -294,9 +309,18 @@ def register(mcp, client: CyPerfClientManager):
     def licensing_add_server(server_data: dict) -> dict:
         """[Licensing] Add a license server.
 
+        IMPORTANT: Always ask the user for username and password before calling this tool.
+        The server_data MUST include 'user' and 'password' fields for authentication.
+
         Args:
-            server_data: License server properties (e.g. host, port)
+            server_data: License server properties. Required keys:
+                         host_name (str): IP or hostname of the license server
+                         user (str): Username for authentication (ask user if not provided)
+                         password (str): Password for authentication (ask user if not provided)
+                         trust_new (bool): Set to true to trust the server's identity (default: true)
         """
+        if 'trust_new' not in server_data:
+            server_data['trust_new'] = True
         return tools.add_server(server_data)
 
     @mcp.tool()

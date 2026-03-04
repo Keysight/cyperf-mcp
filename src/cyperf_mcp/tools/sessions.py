@@ -92,9 +92,13 @@ class SessionTools:
         except Exception as e:
             return handle_exception(e)
 
-    def save_config(self, session_id: str):
+    def save_config(self, session_id: str, name: str = None):
         try:
-            result = self.api.start_session_config_save(session_id)
+            if name:
+                op = cyperf.SaveConfigOperation(name=name)
+                result = self.api.start_session_config_save(session_id, save_config_operation=op)
+            else:
+                result = self.api.start_session_config_save(session_id)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -261,6 +265,98 @@ class SessionTools:
         except Exception as e:
             return handle_exception(e)
 
+    def get_app_actions(self, session_id: str, traffic_profile_id: str = "1",
+                        app_id: str = None):
+        """List actions for an application in a session's traffic profile."""
+        try:
+            session = self.api.get_session_by_id(session_id)
+            idx = int(traffic_profile_id) - 1
+            if not session.config.config.traffic_profiles or idx >= len(session.config.config.traffic_profiles):
+                return {"error": True, "message": f"Traffic profile {traffic_profile_id} not found"}
+            app_profile = session.config.config.traffic_profiles[idx]
+            for app in app_profile.applications:
+                if str(app.base_model.id) == str(app_id):
+                    actions = []
+                    for track in app.tracks:
+                        for action in track.actions:
+                            bm = action.base_model
+                            params = []
+                            for param in action.params:
+                                pbm = param.base_model
+                                params.append({
+                                    "name": getattr(pbm, 'name', None),
+                                    "id": getattr(pbm, 'id', None),
+                                    "value": getattr(pbm, 'value', None),
+                                })
+                            actions.append({
+                                "name": getattr(bm, 'name', None),
+                                "id": getattr(bm, 'id', None),
+                                "params": params,
+                            })
+                    return {"app_name": app.base_model.name, "app_id": app_id, "actions": actions}
+            return {"error": True, "message": f"Application with id={app_id} not found"}
+        except cyperf.ApiException as e:
+            return handle_api_error(e)
+        except Exception as e:
+            return handle_exception(e)
+
+    def set_app_action_param(self, session_id: str, traffic_profile_id: str = "1",
+                             app_id: str = None, action_id: str = None,
+                             param_id: str = None, value: str = None):
+        """Set the value of an action parameter."""
+        try:
+            session = self.api.get_session_by_id(session_id)
+            idx = int(traffic_profile_id) - 1
+            if not session.config.config.traffic_profiles or idx >= len(session.config.config.traffic_profiles):
+                return {"error": True, "message": f"Traffic profile {traffic_profile_id} not found"}
+            app_profile = session.config.config.traffic_profiles[idx]
+            for app in app_profile.applications:
+                if str(app.base_model.id) == str(app_id):
+                    for track in app.tracks:
+                        for action in track.actions:
+                            if str(action.base_model.id) == str(action_id):
+                                for param in action.params:
+                                    if str(param.base_model.id) == str(param_id):
+                                        old_value = param.base_model.value
+                                        param.base_model.value = value
+                                        action.update()
+                                        return {
+                                            "result": f"Parameter '{param.base_model.name}' updated",
+                                            "old_value": old_value,
+                                            "new_value": value,
+                                        }
+                                return {"error": True, "message": f"Param id={param_id} not found in action {action_id}"}
+                    return {"error": True, "message": f"Action id={action_id} not found in app {app_id}"}
+            return {"error": True, "message": f"Application with id={app_id} not found"}
+        except cyperf.ApiException as e:
+            return handle_api_error(e)
+        except Exception as e:
+            return handle_exception(e)
+
+    def remove_app_action(self, session_id: str, traffic_profile_id: str = "1",
+                          app_id: str = None, action_id: str = None):
+        """Remove an action by ID from an application in a session's traffic profile."""
+        try:
+            session = self.api.get_session_by_id(session_id)
+            idx = int(traffic_profile_id) - 1
+            if not session.config.config.traffic_profiles or idx >= len(session.config.config.traffic_profiles):
+                return {"error": True, "message": f"Traffic profile {traffic_profile_id} not found"}
+            app_profile = session.config.config.traffic_profiles[idx]
+            for app in app_profile.applications:
+                if str(app.base_model.id) == str(app_id):
+                    for track in app.tracks:
+                        for action in track.actions:
+                            if str(action.base_model.id) == str(action_id):
+                                action_name = getattr(action.base_model, 'name', action_id)
+                                action.delete()
+                                return {"result": f"Action '{action_name}' (id={action_id}) removed from '{app.base_model.name}'"}
+                    return {"error": True, "message": f"Action with id={action_id} not found in app {app_id}"}
+            return {"error": True, "message": f"Application with id={app_id} not found"}
+        except cyperf.ApiException as e:
+            return handle_api_error(e)
+        except Exception as e:
+            return handle_exception(e)
+
     def remove_application(self, session_id: str, traffic_profile_id: str = "1",
                             app_id: str = None):
         """Remove an application by its ID from a session's traffic profile."""
@@ -357,6 +453,92 @@ class SessionTools:
             if not assigned:
                 result["warning"] = "No segments matched. Check available_segments for valid names."
             return result
+        except cyperf.ApiException as e:
+            return handle_api_error(e)
+        except Exception as e:
+            return handle_exception(e)
+
+    def rename_network_segments(self, session_id: str, renames: dict):
+        """Rename network segments. renames maps old name to new name."""
+        try:
+            session = self.api.get_session_by_id(session_id)
+            renamed = {}
+            available_segments = []
+            for net_profile in session.config.config.network_profiles:
+                for ip_net in net_profile.ip_network_segment:
+                    available_segments.append(ip_net.name)
+                    if ip_net.name in renames:
+                        old_name = ip_net.name
+                        ip_net.name = renames[old_name]
+                        ip_net.update()
+                        renamed[old_name] = renames[old_name]
+            result = {"result": "Segments renamed", "renamed": renamed,
+                      "available_segments": available_segments}
+            if not renamed:
+                result["warning"] = "No segments matched. Check available_segments for valid names."
+            return result
+        except cyperf.ApiException as e:
+            return handle_api_error(e)
+        except Exception as e:
+            return handle_exception(e)
+
+    def get_network_segments(self, session_id: str):
+        """List network segments with their IP range settings."""
+        try:
+            session = self.api.get_session_by_id(session_id)
+            segments = []
+            for net_profile in session.config.config.network_profiles:
+                for ip_net in net_profile.ip_network_segment:
+                    ip_ranges = []
+                    for ip_range in ip_net.ip_ranges:
+                        bm = ip_range.base_model
+                        ip_ranges.append({
+                            "id": getattr(bm, 'id', None),
+                            "ip_auto": getattr(bm, 'ip_auto', None),
+                            "ip_start": getattr(bm, 'ip_start', None),
+                            "ip_incr": getattr(bm, 'ip_incr', None),
+                            "count": getattr(bm, 'count', None),
+                            "max_count_per_agent": getattr(bm, 'max_count_per_agent', None),
+                            "gw_start": getattr(bm, 'gw_start', None),
+                            "gw_auto": getattr(bm, 'gw_auto', None),
+                            "net_mask": getattr(bm, 'net_mask', None),
+                            "ip_ver": getattr(bm, 'ip_ver', None),
+                        })
+                    segments.append({
+                        "name": ip_net.name,
+                        "ip_ranges": ip_ranges,
+                    })
+            return {"data": segments}
+        except cyperf.ApiException as e:
+            return handle_api_error(e)
+        except Exception as e:
+            return handle_exception(e)
+
+    def set_network_ip_range(self, session_id: str, segment_name: str, ip_range_id: str = "1",
+                             properties: dict = None):
+        """Update IP range properties on a network segment by name."""
+        try:
+            session = self.api.get_session_by_id(session_id)
+            for net_profile in session.config.config.network_profiles:
+                for ip_net in net_profile.ip_network_segment:
+                    if ip_net.name == segment_name:
+                        idx = int(ip_range_id) - 1
+                        if idx >= len(ip_net.ip_ranges):
+                            return {"error": True, "message": f"IP range {ip_range_id} not found"}
+                        ip_range = ip_net.ip_ranges[idx]
+                        updated = {}
+                        for key, value in (properties or {}).items():
+                            if hasattr(ip_range, key):
+                                setattr(ip_range, key, value)
+                                updated[key] = value
+                        ip_net.update()
+                        return {"result": f"IP range updated on '{segment_name}'", "updated": updated}
+            available = []
+            for net_profile in session.config.config.network_profiles:
+                for ip_net in net_profile.ip_network_segment:
+                    available.append(ip_net.name)
+            return {"error": True, "message": f"Segment '{segment_name}' not found",
+                    "available_segments": available}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -466,13 +648,15 @@ def register(mcp, client: CyPerfClientManager):
         return tools.get(session_id)
 
     @mcp.tool()
-    def sessions_delete(session_id: str) -> dict:
-        """[Sessions] Delete a session. Stops the test first if running.
+    def sessions_delete(session_ids: list[str]) -> dict:
+        """[Sessions] Delete one or more sessions. Stops running tests first.
 
         Args:
-            session_id: The session identifier to delete
+            session_ids: List of session IDs to delete (single or multiple)
         """
-        return tools.delete(session_id)
+        if len(session_ids) == 1:
+            return tools.delete(session_ids[0])
+        return tools.batch_delete(session_ids)
 
     @mcp.tool()
     def sessions_update(session_id: str, properties: dict) -> dict:
@@ -485,15 +669,6 @@ def register(mcp, client: CyPerfClientManager):
         return tools.update(session_id, properties)
 
     @mcp.tool()
-    def sessions_batch_delete(session_ids: list[str]) -> dict:
-        """[Sessions] Batch delete multiple sessions.
-
-        Args:
-            session_ids: List of session IDs to delete
-        """
-        return tools.batch_delete(session_ids)
-
-    @mcp.tool()
     def sessions_get_config(session_id: str) -> dict:
         """[Sessions] Get the configuration of a session.
 
@@ -503,13 +678,14 @@ def register(mcp, client: CyPerfClientManager):
         return tools.get_config(session_id)
 
     @mcp.tool()
-    def sessions_save_config(session_id: str) -> dict:
+    def sessions_save_config(session_id: str, name: str = None) -> dict:
         """[Sessions] Save session configuration persistently.
 
         Args:
             session_id: The session identifier
+            name: Optional new name for the configuration before saving
         """
-        return tools.save_config(session_id)
+        return tools.save_config(session_id, name)
 
     @mcp.tool()
     def sessions_load_config(session_id: str, config_url: str) -> dict:
@@ -602,6 +778,52 @@ def register(mcp, client: CyPerfClientManager):
         return tools.get_attack_profile_attacks(session_id, attack_profile_id)
 
     @mcp.tool()
+    def sessions_get_app_actions(session_id: str, traffic_profile_id: str = "1",
+                                  app_id: str = None) -> dict:
+        """[Sessions] List actions for an application in a session's traffic profile.
+
+        Args:
+            session_id: The session identifier
+            traffic_profile_id: The traffic profile ID (default '1')
+            app_id: The application ID within the traffic profile
+        """
+        return tools.get_app_actions(session_id, traffic_profile_id, app_id)
+
+    @mcp.tool()
+    def sessions_remove_app_action(session_id: str, traffic_profile_id: str = "1",
+                                    app_id: str = None, action_id: str = None) -> dict:
+        """[Sessions] Remove an action from an application in a session's traffic profile.
+
+        Use sessions_get_app_actions to find the action ID first.
+
+        Args:
+            session_id: The session identifier
+            traffic_profile_id: The traffic profile ID (default '1')
+            app_id: The application ID within the traffic profile
+            action_id: The action ID to remove
+        """
+        return tools.remove_app_action(session_id, traffic_profile_id, app_id, action_id)
+
+    @mcp.tool()
+    def sessions_set_app_action_param(session_id: str, traffic_profile_id: str = "1",
+                                       app_id: str = None, action_id: str = None,
+                                       param_id: str = None, value: str = None) -> dict:
+        """[Sessions] Set the value of an action parameter in an application.
+
+        Use sessions_get_app_actions to find app_id, action_id, and param_id first.
+
+        Args:
+            session_id: The session identifier
+            traffic_profile_id: The traffic profile ID (default '1')
+            app_id: The application ID within the traffic profile
+            action_id: The action ID within the application
+            param_id: The parameter ID within the action
+            value: The new value for the parameter
+        """
+        return tools.set_app_action_param(session_id, traffic_profile_id,
+                                           app_id, action_id, param_id, value)
+
+    @mcp.tool()
     def sessions_remove_application(session_id: str, traffic_profile_id: str = "1",
                                      app_id: str = None) -> dict:
         """[Sessions] Remove an application from a session's traffic profile by app ID.
@@ -665,6 +887,44 @@ def register(mcp, client: CyPerfClientManager):
         return tools.assign_agents(session_id, agent_assignments)
 
     @mcp.tool()
+    def sessions_rename_network_segments(session_id: str, renames: dict) -> dict:
+        """[Sessions] Rename network segments in a session.
+
+        Args:
+            session_id: The session identifier
+            renames: Dict mapping old segment name to new name.
+                     E.g. {"IP Network 1": "Client Network", "IP Network 2": "Server Network"}
+        """
+        return tools.rename_network_segments(session_id, renames)
+
+    @mcp.tool()
+    def sessions_get_network_segments(session_id: str) -> dict:
+        """[Sessions] List network segments with their IP range settings.
+
+        Args:
+            session_id: The session identifier
+        """
+        return tools.get_network_segments(session_id)
+
+    @mcp.tool()
+    def sessions_set_network_ip_range(session_id: str, segment_name: str,
+                                       ip_range_id: str = "1",
+                                       properties: dict = None) -> dict:
+        """[Sessions] Update IP range properties on a network segment.
+
+        Use sessions_get_network_segments to see current values first.
+
+        Args:
+            session_id: The session identifier
+            segment_name: The network segment name (e.g. 'Client Network')
+            ip_range_id: The IP range ID within the segment (default '1')
+            properties: Dict of properties to update. Valid keys include:
+                        ip_auto, ip_start, ip_incr, count, max_count_per_agent,
+                        gw_start, gw_auto, net_mask, net_mask_auto
+        """
+        return tools.set_network_ip_range(session_id, segment_name, ip_range_id, properties)
+
+    @mcp.tool()
     def sessions_disable_automatic_network(session_id: str) -> dict:
         """[Sessions] Disable automatic IP assignment on all network segments.
 
@@ -689,29 +949,5 @@ def register(mcp, client: CyPerfClientManager):
         return tools.set_objective_and_timeline(session_id, objective_type,
                                                 objective_value, duration)
 
-    @mcp.tool()
-    def sessions_test_init(session_id: str) -> dict:
-        """[Sessions] Initialize a test for a session.
-
-        Args:
-            session_id: The session identifier
-        """
-        return tools.test_init(session_id)
-
-    @mcp.tool()
-    def sessions_test_end(session_id: str) -> dict:
-        """[Sessions] End a test for a session.
-
-        Args:
-            session_id: The session identifier
-        """
-        return tools.test_end(session_id)
-
-    @mcp.tool()
-    def sessions_prepare_test(session_id: str) -> dict:
-        """[Sessions] Prepare a test for a session (pre-flight checks).
-
-        Args:
-            session_id: The session identifier
-        """
-        return tools.prepare_test(session_id)
+    # Note: test_init, test_end, prepare_test are available via test_ops tools
+    # (test_init, test_end, test_prepare) to avoid duplication.

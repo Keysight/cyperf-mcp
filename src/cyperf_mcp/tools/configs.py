@@ -163,13 +163,15 @@ def register(mcp, client: CyPerfClientManager):
         return tools.create(config_data)
 
     @mcp.tool()
-    def configs_delete(config_id: str) -> dict:
-        """[Configurations] Delete a configuration.
+    def configs_delete(config_ids: list[str]) -> dict:
+        """[Configurations] Delete one or more configurations.
 
         Args:
-            config_id: The configuration identifier to delete
+            config_ids: List of configuration IDs to delete (single or multiple)
         """
-        return tools.delete(config_id)
+        if len(config_ids) == 1:
+            return tools.delete(config_ids[0])
+        return tools.batch_delete(config_ids)
 
     @mcp.tool()
     def configs_update(config_id: str, properties: dict) -> dict:
@@ -180,15 +182,6 @@ def register(mcp, client: CyPerfClientManager):
             properties: Dict of properties to update
         """
         return tools.update(config_id, properties)
-
-    @mcp.tool()
-    def configs_batch_delete(config_ids: list[str]) -> dict:
-        """[Configurations] Batch delete multiple configurations.
-
-        Args:
-            config_ids: List of configuration IDs to delete
-        """
-        return tools.batch_delete(config_ids)
 
     @mcp.tool()
     def configs_import(file_path: str) -> dict:

@@ -146,19 +146,19 @@ def register(mcp, client: CyPerfClientManager):
         return tools.list_disk_consumers(take, skip)
 
     @mcp.tool()
-    def system_cleanup_diagnostics() -> dict:
-        """[System] Clean up diagnostics data to free disk space."""
-        return tools.cleanup_diagnostics()
+    def system_cleanup(target: str) -> dict:
+        """[System] Clean up data to free disk space.
 
-    @mcp.tool()
-    def system_cleanup_logs() -> dict:
-        """[System] Clean up log files to free disk space."""
-        return tools.cleanup_logs()
-
-    @mcp.tool()
-    def system_cleanup_results() -> dict:
-        """[System] Clean up old test results to free disk space."""
-        return tools.cleanup_results()
+        Args:
+            target: What to clean up - 'diagnostics', 'logs', or 'results'
+        """
+        if target == "diagnostics":
+            return tools.cleanup_diagnostics()
+        elif target == "logs":
+            return tools.cleanup_logs()
+        elif target == "results":
+            return tools.cleanup_results()
+        return {"error": True, "message": f"Unknown cleanup target: {target}. Use 'diagnostics', 'logs', or 'results'."}
 
     @mcp.tool()
     def system_check_eula() -> dict:

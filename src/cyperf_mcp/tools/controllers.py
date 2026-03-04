@@ -169,46 +169,34 @@ def register(mcp, client: CyPerfClientManager):
         return tools.get(controller_id)
 
     @mcp.tool()
-    def controllers_list_nodes(controller_id: str, take: int = None, skip: int = None) -> dict:
-        """[Controllers] List compute nodes on a controller.
+    def controllers_nodes(controller_id: str, node_id: str = None,
+                          take: int = None, skip: int = None) -> dict:
+        """[Controllers] List compute nodes, or get a specific node by ID.
 
         Args:
             controller_id: The controller identifier
-            take: Number of results to return
-            skip: Number of results to skip
+            node_id: Optional node ID (lists all nodes if omitted)
+            take: Number of results to return (when listing all)
+            skip: Number of results to skip (when listing all)
         """
+        if node_id:
+            return tools.get_node(controller_id, node_id)
         return tools.list_nodes(controller_id, take, skip)
 
     @mcp.tool()
-    def controllers_get_node(controller_id: str, node_id: str) -> dict:
-        """[Controllers] Get compute node details.
+    def controllers_ports(controller_id: str, port_id: str = None,
+                          take: int = None, skip: int = None) -> dict:
+        """[Controllers] List ports on a controller, or get a specific port by ID.
 
         Args:
             controller_id: The controller identifier
-            node_id: The compute node identifier
+            port_id: Optional port ID (lists all ports if omitted)
+            take: Number of results to return (when listing all)
+            skip: Number of results to skip (when listing all)
         """
-        return tools.get_node(controller_id, node_id)
-
-    @mcp.tool()
-    def controllers_list_ports(controller_id: str, take: int = None, skip: int = None) -> dict:
-        """[Controllers] List ports on a controller.
-
-        Args:
-            controller_id: The controller identifier
-            take: Number of results to return
-            skip: Number of results to skip
-        """
+        if port_id:
+            return tools.get_port(controller_id, port_id)
         return tools.list_ports(controller_id, take, skip)
-
-    @mcp.tool()
-    def controllers_get_port(controller_id: str, port_id: str) -> dict:
-        """[Controllers] Get port details.
-
-        Args:
-            controller_id: The controller identifier
-            port_id: The port identifier
-        """
-        return tools.get_port(controller_id, port_id)
 
     @mcp.tool()
     def controllers_set_app(controller_id: str, app_id: str) -> dict:

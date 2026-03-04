@@ -113,42 +113,74 @@ src/cyperf_mcp/
 ├── helpers.py             # Serialization, error handling, async polling
 └── tools/
     ├── __init__.py        # Tool registration aggregator
-    ├── agents.py          # Agent management (12 tools)
-    ├── sessions.py        # Session management (16 tools)
-    ├── configs.py         # Configuration management (10 tools)
-    ├── test_ops.py        # Test execution (8 tools)
-    ├── results.py         # Results and reporting (13 tools)
-    ├── resources.py       # Apps, attacks, TLS, captures (17 tools)
-    ├── controllers.py     # Controller and port management (12 tools)
+    ├── agents.py          # Agent management (11 tools)
+    ├── sessions.py        # Session & config management (28 tools)
+    ├── configs.py         # Configuration management (9 tools)
+    ├── test_ops.py        # Test execution (7 tools)
+    ├── results.py         # Results and reporting (8 tools)
+    ├── resources.py       # Apps, attacks, TLS, captures (19 tools)
+    ├── controllers.py     # Controller and port management (10 tools)
     ├── brokers.py         # Broker management (5 tools)
     ├── licensing.py       # License management (17 tools)
     ├── diagnostics.py     # Diagnostics export/cleanup (3 tools)
     ├── notifications.py   # Notification management (6 tools)
-    ├── statistics.py      # Statistics and plugins (6 tools)
+    ├── statistics.py      # Statistics plugins (4 tools)
     ├── certificates.py    # Certificate management (3 tools)
-    ├── system.py          # System utilities (10 tools)
+    ├── system.py          # System utilities (8 tools)
     └── migration.py       # Data migration (2 tools)
 ```
 
-The server wraps the [`cyperf`](https://pypi.org/project/cyperf/) Python SDK's API classes directly. Each tool module follows a class-based pattern where a `*Tools` class holds the API logic, and a `register()` function wires `@mcp.tool()` decorated functions to those methods.
+The server wraps the [`cyperf`](https://pypi.org/project/cyperf/) Python SDK's API classes directly. Each tool module follows a class-based pattern where a `*Tools` class holds the API logic, and a `register()` function wires `@mcp.tool()` decorated functions to those methods. Session config manipulation uses the SDK's DynamicModel pattern for in-place updates.
 
 ## Tool Catalog (140 tools)
 
 All tools use `category_action` naming. Parameters with `= None` are optional.
 
-For the complete reference with parameter details, see **[docs/tools.md](docs/tools.md)**.
+### Sessions — 28 tools
 
-### Agents — 12 tools
+Manage test sessions, traffic/attack profiles, network segments, and test objectives.
+
+| Tool | Description |
+|---|---|
+| `sessions_list` | List all sessions with optional search/filter |
+| `sessions_create` | Create a new session |
+| `sessions_get` | Get session details by ID |
+| `sessions_delete` | Delete one or more sessions (stops running tests first) |
+| `sessions_update` | Update session properties |
+| `sessions_get_config` | Get session configuration |
+| `sessions_save_config` | Save session config (optionally with a new name) |
+| `sessions_load_config` | Load a config into session |
+| `sessions_get_meta` | Get session metadata |
+| `sessions_get_test` | Get session test info (status, progress) |
+| `sessions_touch` | Keep session alive (heartbeat) |
+| `sessions_add_applications` | Add applications by name to a traffic profile |
+| `sessions_add_attacks` | Add attacks by name to an attack profile |
+| `sessions_get_applications` | List applications in a traffic profile |
+| `sessions_get_attacks` | List attacks in an attack profile |
+| `sessions_get_app_actions` | List actions and params for an application |
+| `sessions_set_app_action_param` | Set an action parameter value |
+| `sessions_remove_app_action` | Remove an action from an application |
+| `sessions_remove_application` | Remove an application from a traffic profile |
+| `sessions_remove_attack` | Remove an attack from an attack profile |
+| `sessions_delete_traffic_profile` | Delete a traffic/application profile |
+| `sessions_delete_attack_profile` | Delete an attack profile |
+| `sessions_assign_agents` | Assign agents to named network segments |
+| `sessions_rename_network_segments` | Rename network segments |
+| `sessions_get_network_segments` | List network segments with IP range details |
+| `sessions_set_network_ip_range` | Update IP range properties on a segment |
+| `sessions_disable_automatic_network` | Disable automatic IP on all segments |
+| `sessions_set_objective_and_timeline` | Set test objective type, value, and duration |
+
+### Agents — 11 tools
 
 Manage CyPerf test agents (virtual or hardware appliances).
 
 | Tool | Description |
 |---|---|
-| `agents_list` | List all agents with optional filtering |
+| `agents_list` | List all agents with optional search/filter |
 | `agents_get` | Get agent details by ID |
-| `agents_delete` | Delete an agent |
+| `agents_delete` | Delete one or more agents |
 | `agents_update` | Update agent properties |
-| `agents_batch_delete` | Batch delete multiple agents |
 | `agents_reserve` | Reserve agents for testing |
 | `agents_release` | Release reserved agents |
 | `agents_reboot` | Reboot agents |
@@ -157,47 +189,23 @@ Manage CyPerf test agents (virtual or hardware appliances).
 | `agents_tags` | List agent tags |
 | `agents_export_files` | Export agent files (logs, configs) |
 
-### Sessions — 16 tools
-
-Manage test sessions — the working context for test configuration and execution.
-
-| Tool | Description |
-|---|---|
-| `sessions_list` | List all sessions |
-| `sessions_create` | Create a new session |
-| `sessions_get` | Get session details by ID |
-| `sessions_delete` | Delete a session |
-| `sessions_update` | Update session properties |
-| `sessions_batch_delete` | Batch delete multiple sessions |
-| `sessions_get_config` | Get session configuration |
-| `sessions_save_config` | Save session config persistently |
-| `sessions_load_config` | Load a config into session |
-| `sessions_get_meta` | Get session metadata |
-| `sessions_get_test` | Get session test info (status, progress) |
-| `sessions_touch` | Keep session alive (heartbeat) |
-| `sessions_add_applications` | Add applications to traffic profile |
-| `sessions_test_init` | Initialize a test for a session |
-| `sessions_test_end` | End a test for a session |
-| `sessions_prepare_test` | Prepare a test (pre-flight checks) |
-
-### Configurations — 10 tools
+### Configurations — 9 tools
 
 Manage saved test configurations (templates).
 
 | Tool | Description |
 |---|---|
-| `configs_list` | List available configurations |
+| `configs_list` | List configurations with optional search/filter |
 | `configs_get` | Get configuration by ID |
 | `configs_create` | Create a new configuration |
-| `configs_delete` | Delete a configuration |
+| `configs_delete` | Delete one or more configurations |
 | `configs_update` | Update configuration metadata |
-| `configs_batch_delete` | Batch delete configurations |
 | `configs_import` | Import a configuration file |
 | `configs_import_all` | Import all configurations from file |
 | `configs_export_all` | Export configurations |
 | `configs_categories` | List configuration categories |
 
-### Test Operations — 8 tools
+### Test Operations — 7 tools
 
 Control test execution lifecycle.
 
@@ -206,42 +214,36 @@ Control test execution lifecycle.
 | `test_start` | Start a test run (polls until running) |
 | `test_stop` | Stop a running test gracefully |
 | `test_abort` | Abort a test run immediately |
-| `test_calibrate_start` | Start test calibration |
-| `test_calibrate_stop` | Stop test calibration |
+| `test_calibrate` | Start or stop test calibration |
 | `test_init` | Initialize test (allocate resources) |
 | `test_end` | End test and release resources |
 | `test_prepare` | Prepare test (pre-flight validation) |
 
-### Results — 13 tools
+### Results — 8 tools
 
 Access and export test results, statistics, and reports.
 
 | Tool | Description |
 |---|---|
-| `results_list` | List test results |
+| `results_list` | List test results with optional search/filter |
 | `results_get` | Get result details by ID |
-| `results_delete` | Delete a result |
-| `results_batch_delete` | Batch delete results |
-| `results_get_stats` | Get result statistics |
-| `results_get_stat` | Get a specific statistic by ID |
-| `results_get_files` | List result files |
-| `results_get_file` | Get a specific result file |
+| `results_delete` | Delete one or more results |
+| `results_stats` | List all stats, or get a specific stat (latest snapshot as compact table) |
+| `results_files` | List all files, or get a specific file by ID |
 | `results_download_config` | Download result configuration |
-| `results_generate_csv` | Generate CSV report |
-| `results_generate_pdf` | Generate PDF report |
-| `results_generate_all` | Generate all report formats |
+| `results_generate_report` | Generate report (csv, pdf, or all) |
 | `results_tags` | List result tags |
 
-### Resources — 17 tools
+### Resources — 19 tools
 
-Browse and manage application resources, attacks, TLS certificates, captures, and more.
+Browse and search application resources, attacks, TLS certificates, captures, and more.
 
 | Tool | Description |
 |---|---|
-| `resources_list_apps` | List applications for traffic generation |
+| `resources_list_apps` | List applications with optional search/filter |
 | `resources_get_app` | Get application details |
 | `resources_list_app_types` | List application types |
-| `resources_list_attacks` | List attacks/strikes for security testing |
+| `resources_list_attacks` | List attacks/strikes with optional search/filter |
 | `resources_get_attack` | Get attack details |
 | `resources_list_attack_categories` | List attack categories |
 | `resources_list_auth_profiles` | List authentication profiles |
@@ -255,8 +257,10 @@ Browse and manage application resources, attacks, TLS certificates, captures, an
 | `resources_list_payloads` | List payloads |
 | `resources_list_pcaps` | List PCAP files |
 | `resources_list_http_profiles` | List HTTP profiles |
+| `resources_search_apps` | Search apps by substring (name or description) |
+| `resources_search_attacks` | Search attacks by substring (name or description) |
 
-### Controllers — 12 tools
+### Controllers — 10 tools
 
 Manage CyPerf controllers, compute nodes, and ports.
 
@@ -264,10 +268,8 @@ Manage CyPerf controllers, compute nodes, and ports.
 |---|---|
 | `controllers_list` | List controllers |
 | `controllers_get` | Get controller details |
-| `controllers_list_nodes` | List compute nodes |
-| `controllers_get_node` | Get compute node details |
-| `controllers_list_ports` | List ports on a controller |
-| `controllers_get_port` | Get port details |
+| `controllers_nodes` | List compute nodes, or get one by ID |
+| `controllers_ports` | List ports, or get one by ID |
 | `controllers_set_app` | Set application on controller |
 | `controllers_clear_ports` | Clear port ownership |
 | `controllers_power_cycle` | Power cycle compute nodes |
@@ -334,9 +336,9 @@ Manage system notifications.
 | `notifications_cleanup` | Clean up old notifications |
 | `notifications_get_counts` | Get notification counts |
 
-### Statistics — 6 tools
+### Statistics — 4 tools
 
-Manage statistics plugins and query test result stats.
+Manage statistics plugins for external ingestion.
 
 | Tool | Description |
 |---|---|
@@ -344,8 +346,6 @@ Manage statistics plugins and query test result stats.
 | `stats_create_plugin` | Create a stats plugin |
 | `stats_delete_plugin` | Delete a stats plugin |
 | `stats_ingest` | Ingest external statistics |
-| `stats_get_result_stats` | Get stats for a test result |
-| `stats_get_result_stat` | Get a specific stat by name |
 
 ### Certificates — 3 tools
 
@@ -357,7 +357,7 @@ Manage controller certificates.
 | `certs_generate` | Generate a certificate |
 | `certs_upload` | Upload a certificate |
 
-### System — 10 tools
+### System — 8 tools
 
 System utilities: time, disk, EULA, logging.
 
@@ -366,9 +366,7 @@ System utilities: time, disk, EULA, logging.
 | `system_get_time` | Get server time |
 | `system_get_disk_usage` | Get disk usage overview |
 | `system_list_disk_consumers` | List disk consumers |
-| `system_cleanup_diagnostics` | Clean up diagnostics disk |
-| `system_cleanup_logs` | Clean up logs |
-| `system_cleanup_results` | Clean up test results |
+| `system_cleanup` | Clean up disk space (diagnostics, logs, or results) |
 | `system_check_eula` | Check EULA acceptance |
 | `system_accept_eula` | Accept EULA |
 | `system_get_log_config` | Get logging config |
@@ -388,39 +386,56 @@ Export and import controller data for migration.
 ### Run a Performance Test
 
 ```
-1. sessions_list                              → find or note available sessions
-2. sessions_create  session_data={...}        → create a new session
-3. sessions_load_config  session_id, config_url  → load a test config
-4. agents_list                                → see available agents
-5. test_init  session_id                      → initialize the test
-6. test_start  session_id                     → start the test run
-7. sessions_get_test  session_id              → check test status
-8. test_stop  session_id                      → stop when done
-9. results_list                               → find the result
-10. results_get_stats  result_id              → view statistics
-11. results_generate_pdf  result_id           → generate PDF report
+1. sessions_create  session_data={...}                → create a new session
+2. sessions_load_config  session_id, config_url       → load a test config
+3. agents_list  exclude_offline='true'                → find available agents
+4. sessions_assign_agents  session_id,
+     agent_assignments={"Client": [...], "Server": [...]}  → assign agents
+5. sessions_set_objective_and_timeline  session_id,
+     objective_type="SIMULATED_USERS", objective_value=100, duration=600
+6. test_init  session_id                              → initialize the test
+7. test_start  session_id                             → start the test run
+8. sessions_get_test  session_id                      → check test status
+9. test_stop  session_id                              → stop when done
+10. results_list                                      → find the result
+11. results_stats  result_id                          → view statistics
+12. results_generate_report  result_id, format="pdf"  → generate PDF report
+```
+
+### Add Applications to a Session
+
+```
+1. resources_search_apps  query="HTTP"                → find apps by name
+2. sessions_add_applications  session_id,
+     traffic_profile_id="1", app_names=["HTTP"]       → add apps by name
+3. sessions_get_applications  session_id              → verify apps added
+4. sessions_get_app_actions  session_id, app_id=...   → inspect app actions/params
+5. sessions_set_app_action_param  session_id,
+     app_id=..., action_id=..., param_id=..., value="..."  → configure params
 ```
 
 ### Security Assessment
 
 ```
-1. resources_list_attacks                     → browse available attacks/strikes
-2. resources_list_attack_categories           → see attack categories
-3. sessions_create  session_data={...}        → create session
-4. sessions_add_applications  session_id, app_ids  → add attack applications
-5. test_start  session_id                     → run the security test
-6. results_get_stats  result_id              → analyze security results
+1. resources_search_attacks  query="CVE-2024"         → find attacks by name
+2. sessions_create  session_data={...}                → create session
+3. sessions_add_attacks  session_id,
+     attack_profile_id="1", attack_names=[...]        → add attacks by name
+4. sessions_assign_agents  session_id, agent_assignments={...}
+5. test_start  session_id                             → run the security test
+6. results_stats  result_id                           → analyze results
 ```
 
 ### Infrastructure Management
 
 ```
-1. controllers_list                           → list controllers
-2. controllers_list_nodes  controller_id      → inspect compute nodes
-3. agents_list                                → view all agents
-4. agents_reserve  agent_ids=[...]            → reserve agents
-5. system_get_disk_usage                      → check disk space
-6. licensing_list_licenses                    → check license status
+1. controllers_list                                   → list controllers
+2. controllers_nodes  controller_id                   → inspect compute nodes
+3. agents_list                                        → view all agents
+4. agents_reserve  agent_ids=[...]                    → reserve agents
+5. system_get_disk_usage                              → check disk space
+6. system_cleanup  target="results"                   → free disk space
+7. licensing_list_licenses                            → check license status
 ```
 
 ## Error Handling
@@ -436,7 +451,7 @@ All tools return structured JSON responses. On success, you get the API response
 }
 ```
 
-Async operations (test start/stop, batch deletes, exports) are automatically polled to completion with a default timeout of 300 seconds.
+Async operations (test start/stop, batch deletes, exports) use the SDK's built-in `await_completion()` for polling. A manual `poll_async_operation` fallback is available with a default timeout of 300 seconds.
 
 ## Development
 

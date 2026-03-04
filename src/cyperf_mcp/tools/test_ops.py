@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import cyperf
 from ..client import CyPerfClientManager
-from ..helpers import serialize_response, handle_api_error, handle_exception, poll_async_operation
+from ..helpers import serialize_response, handle_api_error, handle_exception, await_and_serialize
 
 
 class TestOpsTools:
@@ -20,24 +20,20 @@ class TestOpsTools:
         return self._client.sessions
 
     def start(self, session_id: str):
+        """Start a test run (mirrors utils.start_test using await_completion)."""
         try:
-            result = self.api.start_test_run_start(session_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.api.poll_test_run_start(session_id, op_id),
-            )
+            result = self.api.start_test_run_start(session_id=session_id)
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
             return handle_exception(e)
 
     def stop(self, session_id: str):
+        """Stop a test run (mirrors utils.stop_test using await_completion)."""
         try:
-            result = self.api.start_test_run_stop(session_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.api.poll_test_run_stop(session_id, op_id),
-            )
+            result = self.api.start_test_run_stop(session_id=session_id)
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -45,11 +41,8 @@ class TestOpsTools:
 
     def abort(self, session_id: str):
         try:
-            result = self.api.start_test_run_abort(session_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.api.poll_test_run_abort(session_id, op_id),
-            )
+            result = self.api.start_test_run_abort(session_id=session_id)
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -57,11 +50,8 @@ class TestOpsTools:
 
     def calibrate_start(self, session_id: str):
         try:
-            result = self.api.start_test_calibrate_start(session_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.api.poll_test_calibrate_start(session_id, op_id),
-            )
+            result = self.api.start_test_calibrate_start(session_id=session_id)
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -69,11 +59,8 @@ class TestOpsTools:
 
     def calibrate_stop(self, session_id: str):
         try:
-            result = self.api.start_test_calibrate_stop(session_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.api.poll_test_calibrate_stop(session_id, op_id),
-            )
+            result = self.api.start_test_calibrate_stop(session_id=session_id)
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -82,10 +69,7 @@ class TestOpsTools:
     def init(self, session_id: str):
         try:
             result = self.sessions_api.start_session_test_init(session_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.sessions_api.poll_session_test_init(session_id, op_id),
-            )
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -94,10 +78,7 @@ class TestOpsTools:
     def end(self, session_id: str):
         try:
             result = self.sessions_api.start_session_test_end(session_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.sessions_api.poll_session_test_end(session_id, op_id),
-            )
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -106,10 +87,7 @@ class TestOpsTools:
     def prepare(self, session_id: str):
         try:
             result = self.sessions_api.start_session_prepare_test(session_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.sessions_api.poll_session_prepare_test(session_id, op_id),
-            )
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -122,7 +100,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def test_start(session_id: str) -> dict:
-        """Start a test run for a session. Polls until the test is running.
+        """[Test Operations] Start a test run for a session. Polls until the test is running.
 
         Args:
             session_id: The session identifier
@@ -131,7 +109,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def test_stop(session_id: str) -> dict:
-        """Stop a running test gracefully.
+        """[Test Operations] Stop a running test gracefully.
 
         Args:
             session_id: The session identifier
@@ -140,7 +118,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def test_abort(session_id: str) -> dict:
-        """Abort a test run immediately.
+        """[Test Operations] Abort a test run immediately.
 
         Args:
             session_id: The session identifier
@@ -149,7 +127,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def test_calibrate_start(session_id: str) -> dict:
-        """Start test calibration.
+        """[Test Operations] Start test calibration.
 
         Args:
             session_id: The session identifier
@@ -158,7 +136,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def test_calibrate_stop(session_id: str) -> dict:
-        """Stop test calibration.
+        """[Test Operations] Stop test calibration.
 
         Args:
             session_id: The session identifier
@@ -167,7 +145,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def test_init(session_id: str) -> dict:
-        """Initialize a test (allocate resources, prepare agents).
+        """[Test Operations] Initialize a test (allocate resources, prepare agents).
 
         Args:
             session_id: The session identifier
@@ -176,7 +154,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def test_end(session_id: str) -> dict:
-        """End a test and release resources.
+        """[Test Operations] End a test and release resources.
 
         Args:
             session_id: The session identifier
@@ -185,7 +163,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def test_prepare(session_id: str) -> dict:
-        """Prepare a test (pre-flight validation and setup).
+        """[Test Operations] Prepare a test (pre-flight validation and setup).
 
         Args:
             session_id: The session identifier

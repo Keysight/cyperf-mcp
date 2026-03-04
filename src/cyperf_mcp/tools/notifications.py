@@ -81,7 +81,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def notifications_list(take: int = None, skip: int = None) -> dict:
-        """List notifications.
+        """[Notifications] List notifications.
 
         Args:
             take: Number of results to return
@@ -91,7 +91,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def notifications_get(notification_id: str) -> dict:
-        """Get notification details by ID.
+        """[Notifications] Get notification details by ID.
 
         Args:
             notification_id: The notification identifier
@@ -100,7 +100,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def notifications_delete(notification_id: str) -> dict:
-        """Delete a notification.
+        """[Notifications] Delete a notification.
 
         Args:
             notification_id: The notification identifier to delete
@@ -109,15 +109,15 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def notifications_dismiss() -> dict:
-        """Dismiss all notifications."""
+        """[Notifications] Dismiss all notifications."""
         return tools.dismiss()
 
     @mcp.tool()
     def notifications_cleanup() -> dict:
-        """Clean up old notifications."""
+        """[Notifications] Clean up old notifications."""
         return tools.cleanup()
 
     @mcp.tool()
     def notifications_get_counts() -> dict:
-        """Get notification counts by type/severity."""
+        """[Notifications] Get notification counts by type/severity."""
         return tools.get_counts()

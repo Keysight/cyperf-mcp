@@ -192,12 +192,12 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_list_licenses() -> dict:
-        """List all installed licenses."""
+        """[Licensing] List all installed licenses."""
         return tools.list_licenses()
 
     @mcp.tool()
     def licensing_get_license(license_id: int) -> dict:
-        """Get license details by ID.
+        """[Licensing] Get license details by ID.
 
         Args:
             license_id: The license identifier
@@ -206,7 +206,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_activate(activation_code: str) -> dict:
-        """Activate a license with an activation code.
+        """[Licensing] Activate a license with an activation code.
 
         Args:
             activation_code: The activation code
@@ -215,7 +215,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_deactivate(activation_code: str) -> dict:
-        """Deactivate a license.
+        """[Licensing] Deactivate a license.
 
         Args:
             activation_code: The activation code to deactivate
@@ -224,17 +224,17 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_sync() -> dict:
-        """Synchronize licenses with the license server."""
+        """[Licensing] Synchronize licenses with the license server."""
         return tools.sync()
 
     @mcp.tool()
     def licensing_get_hostid() -> dict:
-        """Get the host ID for licensing."""
+        """[Licensing] Get the host ID for licensing."""
         return tools.get_hostid()
 
     @mcp.tool()
     def licensing_reserve_feature(license_id: int, feature_name: str, count: int) -> dict:
-        """Reserve a license feature.
+        """[Licensing] Reserve a license feature.
 
         Args:
             license_id: The license identifier
@@ -245,7 +245,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_remove_reservation(license_id: int) -> dict:
-        """Remove a license reservation.
+        """[Licensing] Remove a license reservation.
 
         Args:
             license_id: The license identifier
@@ -254,12 +254,12 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_test_connectivity() -> dict:
-        """Test connectivity to the license backend server."""
+        """[Licensing] Test connectivity to the license backend server."""
         return tools.test_connectivity()
 
     @mcp.tool()
     def licensing_get_activation_info(activation_code: str) -> dict:
-        """Get information about an activation code.
+        """[Licensing] Get information about an activation code.
 
         Args:
             activation_code: The activation code to look up
@@ -268,7 +268,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_get_entitlement_info(entitlement_code: str) -> dict:
-        """Get information about an entitlement code.
+        """[Licensing] Get information about an entitlement code.
 
         Args:
             entitlement_code: The entitlement code to look up
@@ -277,12 +277,12 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_get_feature_stats() -> dict:
-        """Get counted feature statistics for licenses."""
+        """[Licensing] Get counted feature statistics for licenses."""
         return tools.get_feature_stats()
 
     @mcp.tool()
     def licensing_list_servers(take: int = None, skip: int = None) -> dict:
-        """List license servers.
+        """[Licensing] List license servers.
 
         Args:
             take: Number of results to return
@@ -292,7 +292,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_add_server(server_data: dict) -> dict:
-        """Add a license server.
+        """[Licensing] Add a license server.
 
         Args:
             server_data: License server properties (e.g. host, port)
@@ -301,7 +301,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_get_server(server_id: str) -> dict:
-        """Get license server details.
+        """[Licensing] Get license server details.
 
         Args:
             server_id: The license server identifier
@@ -310,7 +310,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_update_server(server_id: str, properties: dict) -> dict:
-        """Update license server properties.
+        """[Licensing] Update license server properties.
 
         Args:
             server_id: The license server identifier
@@ -320,7 +320,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def licensing_delete_server(server_id: str) -> dict:
-        """Delete a license server.
+        """[Licensing] Delete a license server.
 
         Args:
             server_id: The license server identifier to delete

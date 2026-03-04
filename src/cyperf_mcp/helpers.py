@@ -33,6 +33,40 @@ def handle_exception(e: Exception) -> dict:
     return {"error": True, "message": str(e)}
 
 
+def build_list_kwargs(take=None, skip=None, search_col=None, search_val=None,
+                      filter_mode=None, sort=None, **extra) -> dict:
+    """Build kwargs dict for list API calls, omitting None values."""
+    kwargs = {}
+    if take is not None:
+        kwargs["take"] = take
+    if skip is not None:
+        kwargs["skip"] = skip
+    if search_col is not None:
+        kwargs["search_col"] = search_col
+    if search_val is not None:
+        kwargs["search_val"] = search_val
+    if filter_mode is not None:
+        kwargs["filter_mode"] = filter_mode
+    if sort is not None:
+        kwargs["sort"] = sort
+    for k, v in extra.items():
+        if v is not None:
+            kwargs[k] = v
+    return kwargs
+
+
+def await_and_serialize(operation) -> dict:
+    """Await an async SDK operation using the built-in await_completion() and serialize the result.
+
+    This mirrors the pattern used in cyperf.utils.TestRunner where operations are
+    awaited via operation.await_completion() instead of manual polling.
+    """
+    result = operation.await_completion()
+    if result is None:
+        return {"result": "completed"}
+    return serialize_response(result)
+
+
 def poll_async_operation(start_result, poll_fn, interval: float = 2, timeout: float = 300) -> dict:
     """Poll an async operation until completion.
 
@@ -49,15 +83,19 @@ def poll_async_operation(start_result, poll_fn, interval: float = 2, timeout: fl
     elapsed = 0.0
     while elapsed < timeout:
         status = poll_fn(op_id)
-        if status.state in ("completed", "success"):
+        state = status.state if hasattr(status, 'state') else str(status)
+        if state in ("completed", "success"):
             return serialize_response(status)
-        if status.state in ("error", "failed"):
+        if state in ("error", "failed"):
             return {
                 "error": True,
-                "state": status.state,
-                "message": status.message,
+                "state": state,
+                "message": getattr(status, 'message', ''),
                 "operation_id": op_id,
             }
+        if state == "NOT_FOUND":
+            # Operation completed and was cleaned up by the server
+            return {"result": "completed", "operation_id": op_id}
         time.sleep(interval)
         elapsed += interval
     return {

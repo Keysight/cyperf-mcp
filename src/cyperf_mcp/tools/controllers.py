@@ -151,7 +151,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_list(take: int = None, skip: int = None) -> dict:
-        """List all controllers.
+        """[Controllers] List all controllers.
 
         Args:
             take: Number of results to return
@@ -161,7 +161,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_get(controller_id: str) -> dict:
-        """Get controller details by ID.
+        """[Controllers] Get controller details by ID.
 
         Args:
             controller_id: The controller identifier
@@ -170,7 +170,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_list_nodes(controller_id: str, take: int = None, skip: int = None) -> dict:
-        """List compute nodes on a controller.
+        """[Controllers] List compute nodes on a controller.
 
         Args:
             controller_id: The controller identifier
@@ -181,7 +181,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_get_node(controller_id: str, node_id: str) -> dict:
-        """Get compute node details.
+        """[Controllers] Get compute node details.
 
         Args:
             controller_id: The controller identifier
@@ -191,7 +191,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_list_ports(controller_id: str, take: int = None, skip: int = None) -> dict:
-        """List ports on a controller.
+        """[Controllers] List ports on a controller.
 
         Args:
             controller_id: The controller identifier
@@ -202,7 +202,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_get_port(controller_id: str, port_id: str) -> dict:
-        """Get port details.
+        """[Controllers] Get port details.
 
         Args:
             controller_id: The controller identifier
@@ -212,7 +212,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_set_app(controller_id: str, app_id: str) -> dict:
-        """Set application on a controller.
+        """[Controllers] Set application on a controller.
 
         Args:
             controller_id: The controller identifier
@@ -222,7 +222,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_clear_ports(controller_id: str) -> dict:
-        """Clear port ownership on a controller.
+        """[Controllers] Clear port ownership on a controller.
 
         Args:
             controller_id: The controller identifier
@@ -231,7 +231,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_power_cycle(controller_id: str, node_ids: list[str]) -> dict:
-        """Power cycle compute nodes.
+        """[Controllers] Power cycle compute nodes.
 
         Args:
             controller_id: The controller identifier
@@ -241,7 +241,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_reboot_port(controller_id: str, port_id: str) -> dict:
-        """Reboot a port on a controller.
+        """[Controllers] Reboot a port on a controller.
 
         Args:
             controller_id: The controller identifier
@@ -251,7 +251,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_set_link_state(controller_id: str, port_id: str, state: str) -> dict:
-        """Set port link state (up/down).
+        """[Controllers] Set port link state (up/down).
 
         Args:
             controller_id: The controller identifier
@@ -262,7 +262,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def controllers_set_aggregation(controller_id: str, node_id: str, mode: str) -> dict:
-        """Set node aggregation mode.
+        """[Controllers] Set node aggregation mode.
 
         Args:
             controller_id: The controller identifier

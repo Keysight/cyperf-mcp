@@ -86,7 +86,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def stats_list_plugins(take: int = None, skip: int = None) -> dict:
-        """List stats plugins.
+        """[Statistics] List stats plugins.
 
         Args:
             take: Number of results to return
@@ -96,7 +96,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def stats_create_plugin(plugin_data: dict) -> dict:
-        """Create a stats plugin for external statistics ingestion.
+        """[Statistics] Create a stats plugin for external statistics ingestion.
 
         Args:
             plugin_data: Plugin configuration (e.g. name, type, endpoint)
@@ -105,7 +105,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def stats_delete_plugin(plugin_id: str) -> dict:
-        """Delete a stats plugin.
+        """[Statistics] Delete a stats plugin.
 
         Args:
             plugin_id: The plugin identifier to delete
@@ -114,7 +114,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def stats_ingest(operation_data: dict) -> dict:
-        """Ingest external statistics via a plugin.
+        """[Statistics] Ingest external statistics via a plugin.
 
         Args:
             operation_data: Ingestion operation parameters
@@ -123,7 +123,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def stats_get_result_stats(result_id: str, take: int = None, skip: int = None) -> dict:
-        """Get statistics for a test result.
+        """[Statistics] Get statistics for a test result.
 
         Args:
             result_id: The test result identifier
@@ -134,7 +134,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def stats_get_result_stat(result_id: str, stat_id: str) -> dict:
-        """Get a specific statistic by name from a test result.
+        """[Statistics] Get a specific statistic by name from a test result.
 
         Args:
             result_id: The test result identifier

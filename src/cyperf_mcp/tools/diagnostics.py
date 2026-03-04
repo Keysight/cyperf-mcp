@@ -52,12 +52,12 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def diagnostics_list_components() -> dict:
-        """List diagnostic components available for export."""
+        """[Diagnostics] List diagnostic components available for export."""
         return tools.list_components()
 
     @mcp.tool()
     def diagnostics_export(component_names: list[str] = None) -> dict:
-        """Export diagnostics. Optionally filter by component names.
+        """[Diagnostics] Export diagnostics. Optionally filter by component names.
 
         Args:
             component_names: Optional list of component names to export
@@ -66,5 +66,5 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def diagnostics_delete() -> dict:
-        """Delete all diagnostics data."""
+        """[Diagnostics] Delete all diagnostics data."""
         return tools.delete()

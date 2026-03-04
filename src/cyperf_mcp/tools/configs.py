@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import cyperf
 from ..client import CyPerfClientManager
-from ..helpers import serialize_response, handle_api_error, handle_exception, poll_async_operation
+from ..helpers import serialize_response, handle_api_error, handle_exception, await_and_serialize, build_list_kwargs
 
 
 class ConfigTools:
@@ -15,13 +15,10 @@ class ConfigTools:
     def api(self) -> cyperf.ConfigurationsApi:
         return self._client.configs
 
-    def list(self, take=None, skip=None):
+    def list(self, take=None, skip=None, search_col=None, search_val=None,
+             filter_mode=None, sort=None):
         try:
-            kwargs = {}
-            if take is not None:
-                kwargs["take"] = take
-            if skip is not None:
-                kwargs["skip"] = skip
+            kwargs = build_list_kwargs(take, skip, search_col, search_val, filter_mode, sort)
             result = self.api.get_configs(**kwargs)
             return serialize_response(result)
         except cyperf.ApiException as e:
@@ -74,18 +71,17 @@ class ConfigTools:
                 for cid in config_ids
             ]
             result = self.api.start_configs_batch_delete(items=items)
-            return poll_async_operation(result, self.api.poll_configs_batch_delete)
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
             return handle_exception(e)
 
     def import_config(self, file_path: str):
+        """Import a configuration file (mirrors utils.load_configuration_file using await_completion)."""
         try:
-            with open(file_path, "rb") as f:
-                data = f.read()
-            result = self.api.start_configs_import(body=data)
-            return poll_async_operation(result, self.api.poll_configs_import)
+            result = self.api.start_configs_import(file_path)
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -95,7 +91,7 @@ class ConfigTools:
         try:
             op = cyperf.ImportAllOperation(file_path=file_path)
             result = self.api.start_configs_import_all(operation=op)
-            return poll_async_operation(result, self.api.poll_configs_import_all)
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -107,7 +103,7 @@ class ConfigTools:
             if config_ids:
                 op.ids = config_ids
             result = self.api.start_configs_export_all(operation=op)
-            return poll_async_operation(result, self.api.poll_configs_export_all)
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -133,18 +129,24 @@ def register(mcp, client: CyPerfClientManager):
     tools = ConfigTools(client)
 
     @mcp.tool()
-    def configs_list(take: int = None, skip: int = None) -> dict:
-        """List available CyPerf configurations.
+    def configs_list(take: int = None, skip: int = None,
+                     search_col: str = None, search_val: str = None,
+                     filter_mode: str = None, sort: str = None) -> dict:
+        """[Configurations] List available CyPerf configurations with optional filtering and search.
 
         Args:
             take: Number of results to return
             skip: Number of results to skip
+            search_col: Column to search (e.g. 'name')
+            search_val: Value to search for
+            filter_mode: Filter mode ('contains', 'exact', etc.)
+            sort: Sort expression
         """
-        return tools.list(take, skip)
+        return tools.list(take, skip, search_col, search_val, filter_mode, sort)
 
     @mcp.tool()
     def configs_get(config_id: str) -> dict:
-        """Get a configuration by ID.
+        """[Configurations] Get a configuration by ID.
 
         Args:
             config_id: The configuration identifier
@@ -153,7 +155,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def configs_create(config_data: dict) -> dict:
-        """Create a new configuration.
+        """[Configurations] Create a new configuration.
 
         Args:
             config_data: Configuration properties (name, description, etc.)
@@ -162,7 +164,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def configs_delete(config_id: str) -> dict:
-        """Delete a configuration.
+        """[Configurations] Delete a configuration.
 
         Args:
             config_id: The configuration identifier to delete
@@ -171,7 +173,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def configs_update(config_id: str, properties: dict) -> dict:
-        """Update configuration metadata.
+        """[Configurations] Update configuration metadata.
 
         Args:
             config_id: The configuration identifier
@@ -181,7 +183,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def configs_batch_delete(config_ids: list[str]) -> dict:
-        """Batch delete multiple configurations.
+        """[Configurations] Batch delete multiple configurations.
 
         Args:
             config_ids: List of configuration IDs to delete
@@ -190,7 +192,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def configs_import(file_path: str) -> dict:
-        """Import a configuration from a local file.
+        """[Configurations] Import a configuration from a local file.
 
         Args:
             file_path: Path to the configuration file to import
@@ -199,7 +201,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def configs_import_all(file_path: str) -> dict:
-        """Import all configurations from a file.
+        """[Configurations] Import all configurations from a file.
 
         Args:
             file_path: Path to the file containing configurations
@@ -208,7 +210,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def configs_export_all(config_ids: list[str] = None) -> dict:
-        """Export configurations. If config_ids given, exports those; otherwise all.
+        """[Configurations] Export configurations. If config_ids given, exports those; otherwise all.
 
         Args:
             config_ids: Optional list of configuration IDs to export
@@ -217,7 +219,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def configs_categories(take: int = None, skip: int = None) -> dict:
-        """List configuration categories.
+        """[Configurations] List configuration categories.
 
         Args:
             take: Number of results to return

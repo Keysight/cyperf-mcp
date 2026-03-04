@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import cyperf
 from ..client import CyPerfClientManager
-from ..helpers import serialize_response, handle_api_error, handle_exception
+from ..helpers import serialize_response, handle_api_error, handle_exception, build_list_kwargs
 
 
 class ResourceTools:
@@ -15,13 +15,10 @@ class ResourceTools:
     def api(self) -> cyperf.ApplicationResourcesApi:
         return self._client.resources
 
-    def list_apps(self, take=None, skip=None):
+    def list_apps(self, take=None, skip=None, search_col=None, search_val=None,
+                  filter_mode=None, sort=None):
         try:
-            kwargs = {}
-            if take is not None:
-                kwargs["take"] = take
-            if skip is not None:
-                kwargs["skip"] = skip
+            kwargs = build_list_kwargs(take, skip, search_col, search_val, filter_mode, sort)
             result = self.api.get_resources_apps(**kwargs)
             return serialize_response(result)
         except cyperf.ApiException as e:
@@ -52,13 +49,10 @@ class ResourceTools:
         except Exception as e:
             return handle_exception(e)
 
-    def list_attacks(self, take=None, skip=None):
+    def list_attacks(self, take=None, skip=None, search_col=None, search_val=None,
+                     filter_mode=None, sort=None):
         try:
-            kwargs = {}
-            if take is not None:
-                kwargs["take"] = take
-            if skip is not None:
-                kwargs["skip"] = skip
+            kwargs = build_list_kwargs(take, skip, search_col, search_val, filter_mode, sort)
             result = self.api.get_resources_attacks(**kwargs)
             return serialize_response(result)
         except cyperf.ApiException as e:
@@ -227,23 +221,74 @@ class ResourceTools:
             return handle_exception(e)
 
 
+    def search_apps(self, query: str):
+        """Search apps by substring match on name or description (case-insensitive)."""
+        try:
+            all_apps = self.api.get_resources_apps()
+            q = query.lower()
+            matches = []
+            for app in all_apps:
+                name = getattr(app, 'name', '') or ''
+                desc = getattr(app, 'description', '') or ''
+                if q in name.lower() or q in desc.lower():
+                    matches.append({
+                        "name": name,
+                        "id": getattr(app, 'id', None),
+                        "description": desc,
+                    })
+            return {"count": len(matches), "matches": matches}
+        except cyperf.ApiException as e:
+            return handle_api_error(e)
+        except Exception as e:
+            return handle_exception(e)
+
+    def search_attacks(self, query: str):
+        """Search attacks by substring match on name or description (case-insensitive)."""
+        try:
+            all_attacks = self.api.get_resources_attacks()
+            q = query.lower()
+            matches = []
+            for attack in all_attacks:
+                name = getattr(attack, 'name', '') or ''
+                desc = getattr(attack, 'description', '') or ''
+                if q in name.lower() or q in desc.lower():
+                    matches.append({
+                        "name": name,
+                        "id": getattr(attack, 'id', None),
+                        "description": desc,
+                    })
+            return {"count": len(matches), "matches": matches}
+        except cyperf.ApiException as e:
+            return handle_api_error(e)
+        except Exception as e:
+            return handle_exception(e)
+
+
 def register(mcp, client: CyPerfClientManager):
     """Register all resource tools with the MCP server."""
     tools = ResourceTools(client)
 
     @mcp.tool()
-    def resources_list_apps(take: int = None, skip: int = None) -> dict:
-        """List available applications for traffic generation.
+    def resources_list_apps(take: int = None, skip: int = None,
+                            search_col: str = None, search_val: str = None,
+                            filter_mode: str = None, sort: str = None) -> dict:
+        """[Resources] List available applications for traffic generation with optional search.
+
+        Use search_col='name', search_val='HTTP', filter_mode='exact' to find apps by name.
 
         Args:
             take: Number of results to return
             skip: Number of results to skip
+            search_col: Column to search (e.g. 'name')
+            search_val: Value to search for (e.g. 'HTTP')
+            filter_mode: Filter mode ('contains', 'exact', etc.)
+            sort: Sort expression
         """
-        return tools.list_apps(take, skip)
+        return tools.list_apps(take, skip, search_col, search_val, filter_mode, sort)
 
     @mcp.tool()
     def resources_get_app(app_id: str) -> dict:
-        """Get application details by ID.
+        """[Resources] Get application details by ID.
 
         Args:
             app_id: The application identifier
@@ -252,7 +297,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_list_app_types(take: int = None, skip: int = None) -> dict:
-        """List application types (HTTP, TLS, etc.).
+        """[Resources] List application types (HTTP, TLS, etc.).
 
         Args:
             take: Number of results to return
@@ -261,18 +306,26 @@ def register(mcp, client: CyPerfClientManager):
         return tools.list_app_types(take, skip)
 
     @mcp.tool()
-    def resources_list_attacks(take: int = None, skip: int = None) -> dict:
-        """List available attacks/strikes for security testing.
+    def resources_list_attacks(take: int = None, skip: int = None,
+                               search_col: str = None, search_val: str = None,
+                               filter_mode: str = None, sort: str = None) -> dict:
+        """[Resources] List available attacks/strikes for security testing with optional search.
+
+        Use search_col='name', search_val='CVE-2021', filter_mode='contains' to find attacks.
 
         Args:
             take: Number of results to return
             skip: Number of results to skip
+            search_col: Column to search (e.g. 'name', 'category')
+            search_val: Value to search for
+            filter_mode: Filter mode ('contains', 'exact', etc.)
+            sort: Sort expression
         """
-        return tools.list_attacks(take, skip)
+        return tools.list_attacks(take, skip, search_col, search_val, filter_mode, sort)
 
     @mcp.tool()
     def resources_get_attack(attack_id: str) -> dict:
-        """Get attack/strike details by ID.
+        """[Resources] Get attack/strike details by ID.
 
         Args:
             attack_id: The attack identifier
@@ -281,7 +334,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_list_attack_categories(take: int = None, skip: int = None) -> dict:
-        """List attack categories.
+        """[Resources] List attack categories.
 
         Args:
             take: Number of results to return
@@ -291,7 +344,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_list_auth_profiles(take: int = None, skip: int = None) -> dict:
-        """List authentication profiles.
+        """[Resources] List authentication profiles.
 
         Args:
             take: Number of results to return
@@ -301,7 +354,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_list_captures(take: int = None, skip: int = None) -> dict:
-        """List packet captures.
+        """[Resources] List packet captures.
 
         Args:
             take: Number of results to return
@@ -311,7 +364,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_get_capture(capture_id: str) -> dict:
-        """Get packet capture details by ID.
+        """[Resources] Get packet capture details by ID.
 
         Args:
             capture_id: The capture identifier
@@ -320,7 +373,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_delete_capture(capture_id: str) -> dict:
-        """Delete a packet capture.
+        """[Resources] Delete a packet capture.
 
         Args:
             capture_id: The capture identifier to delete
@@ -329,7 +382,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_list_tls_certs(take: int = None, skip: int = None) -> dict:
-        """List TLS certificates.
+        """[Resources] List TLS certificates.
 
         Args:
             take: Number of results to return
@@ -339,7 +392,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_get_tls_cert(cert_id: str) -> dict:
-        """Get TLS certificate details by ID.
+        """[Resources] Get TLS certificate details by ID.
 
         Args:
             cert_id: The certificate identifier
@@ -348,7 +401,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_delete_tls_cert(tls_cert_id: str) -> dict:
-        """Delete a TLS certificate.
+        """[Resources] Delete a TLS certificate.
 
         Args:
             tls_cert_id: The TLS certificate identifier to delete
@@ -357,7 +410,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_list_custom_fuzzing(take: int = None, skip: int = None) -> dict:
-        """List custom fuzzing scripts.
+        """[Resources] List custom fuzzing scripts.
 
         Args:
             take: Number of results to return
@@ -367,7 +420,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_list_payloads(take: int = None, skip: int = None) -> dict:
-        """List payloads.
+        """[Resources] List payloads.
 
         Args:
             take: Number of results to return
@@ -377,7 +430,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_list_pcaps(take: int = None, skip: int = None) -> dict:
-        """List PCAP files.
+        """[Resources] List PCAP files.
 
         Args:
             take: Number of results to return
@@ -387,10 +440,34 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def resources_list_http_profiles(take: int = None, skip: int = None) -> dict:
-        """List HTTP profiles.
+        """[Resources] List HTTP profiles.
 
         Args:
             take: Number of results to return
             skip: Number of results to skip
         """
         return tools.list_http_profiles(take, skip)
+
+    @mcp.tool()
+    def resources_search_apps(query: str) -> dict:
+        """[Resources] Search applications by substring match against name or description.
+
+        Fetches all apps and filters client-side (case-insensitive).
+        Returns compact results with name, id, and description.
+
+        Args:
+            query: Search string to match against app name or description (e.g. 'LLM', 'streaming')
+        """
+        return tools.search_apps(query)
+
+    @mcp.tool()
+    def resources_search_attacks(query: str) -> dict:
+        """[Resources] Search attacks by substring match against name or description.
+
+        Fetches all attacks and filters client-side (case-insensitive).
+        Returns compact results with name, id, and description.
+
+        Args:
+            query: Search string to match against attack name or description (e.g. 'LLM', 'injection', 'CVE-2024')
+        """
+        return tools.search_attacks(query)

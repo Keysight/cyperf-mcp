@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import cyperf
 from ..client import CyPerfClientManager
-from ..helpers import serialize_response, handle_api_error, handle_exception, poll_async_operation
+from ..helpers import serialize_response, handle_api_error, handle_exception, await_and_serialize, build_list_kwargs
 
 
 class ResultTools:
@@ -19,13 +19,10 @@ class ResultTools:
     def reports_api(self) -> cyperf.ReportsApi:
         return self._client.reports
 
-    def list(self, take=None, skip=None):
+    def list(self, take=None, skip=None, search_col=None, search_val=None,
+             filter_mode=None, sort=None):
         try:
-            kwargs = {}
-            if take is not None:
-                kwargs["take"] = take
-            if skip is not None:
-                kwargs["skip"] = skip
+            kwargs = build_list_kwargs(take, skip, search_col, search_val, filter_mode, sort)
             result = self.api.get_results(**kwargs)
             return serialize_response(result)
         except cyperf.ApiException as e:
@@ -58,7 +55,7 @@ class ResultTools:
                 for rid in result_ids
             ]
             result = self.api.start_results_batch_delete(items=items)
-            return poll_async_operation(result, self.api.poll_results_batch_delete)
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -118,10 +115,7 @@ class ResultTools:
     def generate_csv(self, result_id: str):
         try:
             result = self.reports_api.start_result_generate_csv(result_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.reports_api.poll_result_generate_csv(result_id, op_id),
-            )
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -130,10 +124,7 @@ class ResultTools:
     def generate_pdf(self, result_id: str):
         try:
             result = self.reports_api.start_result_generate_pdf(result_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.reports_api.poll_result_generate_pdf(result_id, op_id),
-            )
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -142,10 +133,7 @@ class ResultTools:
     def generate_all(self, result_id: str):
         try:
             result = self.api.start_result_generate_all(result_id)
-            return poll_async_operation(
-                result,
-                lambda op_id: self.api.poll_result_generate_all(result_id, op_id),
-            )
+            return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -171,18 +159,24 @@ def register(mcp, client: CyPerfClientManager):
     tools = ResultTools(client)
 
     @mcp.tool()
-    def results_list(take: int = None, skip: int = None) -> dict:
-        """List test results.
+    def results_list(take: int = None, skip: int = None,
+                     search_col: str = None, search_val: str = None,
+                     filter_mode: str = None, sort: str = None) -> dict:
+        """[Results] List test results with optional filtering and search.
 
         Args:
             take: Number of results to return
             skip: Number of results to skip
+            search_col: Column to search (e.g. 'name')
+            search_val: Value to search for
+            filter_mode: Filter mode ('contains', 'exact', etc.)
+            sort: Sort expression
         """
-        return tools.list(take, skip)
+        return tools.list(take, skip, search_col, search_val, filter_mode, sort)
 
     @mcp.tool()
     def results_get(result_id: str) -> dict:
-        """Get test result details by ID.
+        """[Results] Get test result details by ID.
 
         Args:
             result_id: The result identifier
@@ -191,7 +185,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_delete(result_id: str) -> dict:
-        """Delete a test result.
+        """[Results] Delete a test result.
 
         Args:
             result_id: The result identifier to delete
@@ -200,7 +194,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_batch_delete(result_ids: list[str]) -> dict:
-        """Batch delete multiple test results.
+        """[Results] Batch delete multiple test results.
 
         Args:
             result_ids: List of result IDs to delete
@@ -209,7 +203,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_get_stats(result_id: str, take: int = None, skip: int = None) -> dict:
-        """Get statistics for a test result.
+        """[Results] Get statistics for a test result.
 
         Args:
             result_id: The result identifier
@@ -220,7 +214,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_get_stat(result_id: str, stat_id: str) -> dict:
-        """Get a specific statistic by ID from a test result.
+        """[Results] Get a specific statistic by ID from a test result.
 
         Args:
             result_id: The result identifier
@@ -230,7 +224,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_get_files(result_id: str, take: int = None, skip: int = None) -> dict:
-        """List files associated with a test result.
+        """[Results] List files associated with a test result.
 
         Args:
             result_id: The result identifier
@@ -241,7 +235,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_get_file(result_id: str, file_id: str) -> dict:
-        """Get a specific result file metadata.
+        """[Results] Get a specific result file metadata.
 
         Args:
             result_id: The result identifier
@@ -251,7 +245,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_download_config(result_id: str) -> dict:
-        """Download the configuration used for a test result.
+        """[Results] Download the configuration used for a test result.
 
         Args:
             result_id: The result identifier
@@ -260,7 +254,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_generate_csv(result_id: str) -> dict:
-        """Generate a CSV report for a test result.
+        """[Results] Generate a CSV report for a test result.
 
         Args:
             result_id: The result identifier
@@ -269,7 +263,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_generate_pdf(result_id: str) -> dict:
-        """Generate a PDF report for a test result.
+        """[Results] Generate a PDF report for a test result.
 
         Args:
             result_id: The result identifier
@@ -278,7 +272,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_generate_all(result_id: str) -> dict:
-        """Generate all report formats (CSV + PDF) for a test result.
+        """[Results] Generate all report formats (CSV + PDF) for a test result.
 
         Args:
             result_id: The result identifier
@@ -287,7 +281,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def results_tags(take: int = None, skip: int = None) -> dict:
-        """List result tags.
+        """[Results] List result tags.
 
         Args:
             take: Number of tags to return

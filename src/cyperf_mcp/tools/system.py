@@ -127,17 +127,17 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def system_get_time() -> dict:
-        """Get the CyPerf server time."""
+        """[System] Get the CyPerf server time."""
         return tools.get_time()
 
     @mcp.tool()
     def system_get_disk_usage() -> dict:
-        """Get disk usage overview for the CyPerf controller."""
+        """[System] Get disk usage overview for the CyPerf controller."""
         return tools.get_disk_usage()
 
     @mcp.tool()
     def system_list_disk_consumers(take: int = None, skip: int = None) -> dict:
-        """List disk usage consumers (what's using disk space).
+        """[System] List disk usage consumers (what's using disk space).
 
         Args:
             take: Number of results to return
@@ -147,37 +147,37 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def system_cleanup_diagnostics() -> dict:
-        """Clean up diagnostics data to free disk space."""
+        """[System] Clean up diagnostics data to free disk space."""
         return tools.cleanup_diagnostics()
 
     @mcp.tool()
     def system_cleanup_logs() -> dict:
-        """Clean up log files to free disk space."""
+        """[System] Clean up log files to free disk space."""
         return tools.cleanup_logs()
 
     @mcp.tool()
     def system_cleanup_results() -> dict:
-        """Clean up old test results to free disk space."""
+        """[System] Clean up old test results to free disk space."""
         return tools.cleanup_results()
 
     @mcp.tool()
     def system_check_eula() -> dict:
-        """Check EULA acceptance status."""
+        """[System] Check EULA acceptance status."""
         return tools.check_eula()
 
     @mcp.tool()
     def system_accept_eula() -> dict:
-        """Accept the End User License Agreement."""
+        """[System] Accept the End User License Agreement."""
         return tools.accept_eula()
 
     @mcp.tool()
     def system_get_log_config() -> dict:
-        """Get the current logging configuration."""
+        """[System] Get the current logging configuration."""
         return tools.get_log_config()
 
     @mcp.tool()
     def system_set_log_config(config_data: dict) -> dict:
-        """Set logging configuration.
+        """[System] Set logging configuration.
 
         Args:
             config_data: Logging configuration (e.g. level, file settings)

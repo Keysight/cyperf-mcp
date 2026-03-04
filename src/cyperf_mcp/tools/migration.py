@@ -43,7 +43,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def migration_export(export_data: dict = None) -> dict:
-        """Export controller data for migration.
+        """[Migration] Export controller data for migration.
 
         Args:
             export_data: Optional export parameters (e.g. filter criteria)
@@ -52,5 +52,5 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def migration_import() -> dict:
-        """Import controller data from a migration package."""
+        """[Migration] Import controller data from a migration package."""
         return tools.import_data()

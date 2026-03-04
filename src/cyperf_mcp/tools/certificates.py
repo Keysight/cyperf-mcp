@@ -50,12 +50,12 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def certs_list() -> dict:
-        """List certificates managed by the cert manager."""
+        """[Certificates] List certificates managed by the cert manager."""
         return tools.list()
 
     @mcp.tool()
     def certs_generate(cert_data: dict) -> dict:
-        """Generate a new certificate.
+        """[Certificates] Generate a new certificate.
 
         Args:
             cert_data: Certificate properties (e.g. common_name, organization, validity)
@@ -64,5 +64,5 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def certs_upload() -> dict:
-        """Upload a certificate to the cert manager."""
+        """[Certificates] Upload a certificate to the cert manager."""
         return tools.upload()

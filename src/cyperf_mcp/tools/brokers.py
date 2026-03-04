@@ -74,7 +74,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def brokers_list(take: int = None, skip: int = None) -> dict:
-        """List all brokers.
+        """[Brokers] List all brokers.
 
         Args:
             take: Number of results to return
@@ -84,7 +84,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def brokers_create(broker_data: dict) -> dict:
-        """Create a new broker.
+        """[Brokers] Create a new broker.
 
         Args:
             broker_data: Broker properties (e.g. host, port, name)
@@ -93,7 +93,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def brokers_get(broker_id: str) -> dict:
-        """Get broker details by ID.
+        """[Brokers] Get broker details by ID.
 
         Args:
             broker_id: The broker identifier
@@ -102,7 +102,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def brokers_update(broker_id: str, properties: dict) -> dict:
-        """Update broker properties.
+        """[Brokers] Update broker properties.
 
         Args:
             broker_id: The broker identifier
@@ -112,7 +112,7 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def brokers_delete(broker_id: str) -> dict:
-        """Delete a broker.
+        """[Brokers] Delete a broker.
 
         Args:
             broker_id: The broker identifier to delete

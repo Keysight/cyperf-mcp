@@ -20,7 +20,23 @@ class ConfigTools:
         try:
             kwargs = build_list_kwargs(take, skip, search_col, search_val, filter_mode, sort)
             result = self.api.get_configs(**kwargs)
-            return serialize_response(result)
+            configs = []
+            for c in result:
+                configs.append({
+                    "id": c.id,
+                    "displayName": c.display_name,
+                    "owner": c.owner,
+                    "lastModified": c.last_modified,
+                    "type": c.type,
+                })
+            # Client-side filter if server didn't apply it
+            if search_val and search_col == "name":
+                q = search_val.lower()
+                if filter_mode == "exact":
+                    configs = [c for c in configs if (c.get("displayName") or "").lower() == q]
+                else:
+                    configs = [c for c in configs if q in (c.get("displayName") or "").lower()]
+            return {"data": configs, "totalCount": len(configs)}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -57,7 +73,7 @@ class ConfigTools:
     def update(self, config_id: str, properties: dict):
         try:
             config = cyperf.ConfigMetadata(**properties)
-            result = self.api.patch_config(config_id, config=config)
+            result = self.api.patch_config(config_id, config_metadata=config)
             return serialize_response(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)

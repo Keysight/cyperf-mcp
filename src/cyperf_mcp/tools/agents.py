@@ -57,12 +57,11 @@ class AgentTools:
 
     def batch_delete(self, agent_ids: list[str]):
         try:
-            items = [
-                cyperf.StartAgentsBatchDeleteRequestInner(id=aid)
-                for aid in agent_ids
-            ]
-            result = self.api.start_agents_batch_delete(start_agents_batch_delete_request_inner=items)
-            return await_and_serialize(result)
+            results = []
+            for aid in agent_ids:
+                self.api.delete_agent(aid)
+                results.append(aid)
+            return {"result": f"Deleted {len(results)} agents", "deleted": results}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:

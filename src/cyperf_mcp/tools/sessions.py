@@ -72,12 +72,11 @@ class SessionTools:
 
     def batch_delete(self, session_ids: list[str]):
         try:
-            items = [
-                cyperf.StartAgentsBatchDeleteRequestInner(id=sid)
-                for sid in session_ids
-            ]
-            result = self.api.start_sessions_batch_delete(start_agents_batch_delete_request_inner=items)
-            return await_and_serialize(result)
+            results = []
+            for sid in session_ids:
+                self.api.delete_session(sid)
+                results.append(sid)
+            return {"result": f"Deleted {len(results)} sessions", "deleted": results}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:

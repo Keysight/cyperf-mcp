@@ -92,12 +92,11 @@ class ConfigTools:
 
     def batch_delete(self, config_ids: list[str]):
         try:
-            items = [
-                cyperf.StartAgentsBatchDeleteRequestInner(id=cid)
-                for cid in config_ids
-            ]
-            result = self.api.start_configs_batch_delete(start_agents_batch_delete_request_inner=items)
-            return await_and_serialize(result)
+            results = []
+            for cid in config_ids:
+                self.api.delete_config(cid)
+                results.append(cid)
+            return {"result": f"Deleted {len(results)} configurations", "deleted": results}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:

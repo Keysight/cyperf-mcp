@@ -50,12 +50,11 @@ class ResultTools:
 
     def batch_delete(self, result_ids: list[str]):
         try:
-            items = [
-                cyperf.StartAgentsBatchDeleteRequestInner(id=rid)
-                for rid in result_ids
-            ]
-            result = self.api.start_results_batch_delete(start_agents_batch_delete_request_inner=items)
-            return await_and_serialize(result)
+            results = []
+            for rid in result_ids:
+                self.api.delete_result(rid)
+                results.append(rid)
+            return {"result": f"Deleted {len(results)} results", "deleted": results}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:

@@ -76,7 +76,7 @@ class SessionTools:
                 cyperf.StartAgentsBatchDeleteRequestInner(id=sid)
                 for sid in session_ids
             ]
-            result = self.api.start_sessions_batch_delete(items=items)
+            result = self.api.start_sessions_batch_delete(start_agents_batch_delete_request_inner=items)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -166,7 +166,15 @@ class SessionTools:
                 )
                 if not len(apps_result):
                     return {"error": True, "message": f"Application '{name}' not found"}
-                app = apps_result[0]
+                # Prefer exact name match over substring match
+                app = None
+                for candidate in apps_result:
+                    cname = candidate.name if hasattr(candidate, 'name') else ''
+                    if cname.lower() == name.lower():
+                        app = candidate
+                        break
+                if app is None:
+                    app = apps_result[0]
                 app_profile.applications.append(
                     cyperf.Application(
                         external_resource_url=app.id, objective_weight=1
@@ -205,7 +213,15 @@ class SessionTools:
                 )
                 if not len(attacks_result):
                     return {"error": True, "message": f"Attack '{name}' not found"}
-                attack = attacks_result[0]
+                # Prefer exact name match over substring match
+                attack = None
+                for candidate in attacks_result:
+                    cname = candidate.name if hasattr(candidate, 'name') else ''
+                    if cname.lower() == name.lower():
+                        attack = candidate
+                        break
+                if attack is None:
+                    attack = attacks_result[0]
                 attack_profile.attacks.append(
                     cyperf.Attack(external_resource_url=attack.id)
                 )
@@ -634,7 +650,9 @@ def register(mcp, client: CyPerfClientManager):
         """[Sessions] Create a new CyPerf session.
 
         Args:
-            session_data: Session properties (e.g. name, description)
+            session_data: Session properties. Must include 'config_url' pointing to
+                          a saved configuration (e.g. 'appsec-123' from configs_list).
+                          Optional: 'name' for a display name.
         """
         return tools.create(session_data)
 
@@ -729,13 +747,14 @@ def register(mcp, client: CyPerfClientManager):
                                   app_names: list[str]) -> dict:
         """[Sessions] Add applications by name to a session's traffic profile.
 
-        Looks up each application by name, then adds them to the specified
-        traffic profile. Use resources_list_apps to discover available names.
+        Looks up each application by name (exact match preferred, falls back to
+        substring match). Use resources_search_apps or resources_list_apps to
+        discover available names first. Use exact names like 'HTTP App' not 'HTTP'.
 
         Args:
             session_id: The session identifier
             traffic_profile_id: The traffic profile ID within the session config
-            app_names: List of application names to add (e.g. ['HTTP', 'TLS'])
+            app_names: List of exact application names to add (e.g. ['HTTP App', 'HTTPS'])
         """
         return tools.add_applications(session_id, traffic_profile_id, app_names)
 
@@ -744,13 +763,14 @@ def register(mcp, client: CyPerfClientManager):
                              attack_names: list[str]) -> dict:
         """[Sessions] Add attacks by name to a session's attack profile.
 
-        Looks up each attack by name, then adds them to the specified
-        attack profile. Use resources_list_attacks to discover available names.
+        Looks up each attack by name (exact match preferred, falls back to
+        substring match). Use resources_search_attacks or resources_list_attacks
+        to discover available names first. Use exact names.
 
         Args:
             session_id: The session identifier
             attack_profile_id: The attack profile ID within the session config
-            attack_names: List of attack names to add
+            attack_names: List of exact attack names to add
         """
         return tools.add_attacks(session_id, attack_profile_id, attack_names)
 

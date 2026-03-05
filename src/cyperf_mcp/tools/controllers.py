@@ -12,7 +12,7 @@ class ControllerTools:
         self._client = client
 
     @property
-    def api(self) -> cyperf.AgentsApi:
+    def api(self):
         return self._client.controllers
 
     def list(self, take=None, skip=None):

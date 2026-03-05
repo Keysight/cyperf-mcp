@@ -4,17 +4,43 @@ import cyperf
 
 
 def serialize_response(obj):
-    """Convert cyperf model objects to JSON-serializable dicts."""
+    """Convert cyperf model objects to JSON-serializable dicts.
+
+    Handles SDK DynamicModel/DynamicList wrappers, AnyOf/OneOf wrappers
+    (actual_instance), Pydantic models (model_dump), plain lists, and
+    scalar values.  Uses model_dump() instead of to_dict() because the
+    SDK's to_dict() excludes read-only fields, stripping useful data.
+    """
     if obj is None:
         return {"result": None}
-    if hasattr(obj, "to_dict"):
-        return obj.to_dict()
-    if isinstance(obj, list):
+
+    # Unwrap SDK DynamicModel wrappers (have .base_model with the Pydantic model)
+    if hasattr(obj, 'base_model') and hasattr(obj, 'api_client'):
+        return serialize_response(obj.base_model)
+
+    # Unwrap AnyOf/OneOf response wrappers
+    if hasattr(obj, 'actual_instance'):
+        return serialize_response(obj.actual_instance)
+
+    # Pydantic v2 models — use model_dump to keep read-only fields
+    if hasattr(obj, 'model_dump'):
+        return obj.model_dump(by_alias=True, exclude_none=True)
+
+    # Iterables (list, DynamicList, tuple, etc.) — but not str/bytes/dict
+    if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, dict)):
         return [serialize_response(item) for item in obj]
+
+    # Dicts pass through
     if isinstance(obj, dict):
         return obj
+
+    # Scalars
+    if isinstance(obj, (str, int, float, bool)):
+        return {"result": obj}
+
     if isinstance(obj, (bytes, bytearray)):
         return {"result": "<binary data>", "size": len(obj)}
+
     return {"result": str(obj)}
 
 

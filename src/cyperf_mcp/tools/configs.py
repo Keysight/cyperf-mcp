@@ -20,23 +20,33 @@ class ConfigTools:
         try:
             kwargs = build_list_kwargs(take, skip, search_col, search_val, filter_mode, sort)
             result = self.api.get_configs(**kwargs)
-            configs = []
-            for c in result:
-                configs.append({
-                    "id": c.id,
-                    "displayName": c.display_name,
-                    "owner": c.owner,
-                    "lastModified": c.last_modified,
-                    "type": c.type,
-                })
+            response = serialize_response(result)
+            # Extract data list from the response
+            if isinstance(response, dict) and "data" in response:
+                configs = response["data"]
+            elif isinstance(response, list):
+                configs = response
+            else:
+                configs = [response] if response else []
+            # Build compact summaries
+            compact = []
+            for c in configs:
+                if isinstance(c, dict):
+                    compact.append({
+                        "id": c.get("id"),
+                        "displayName": c.get("displayName"),
+                        "owner": c.get("owner"),
+                        "lastModified": c.get("lastModified"),
+                        "type": c.get("type"),
+                    })
             # Client-side filter if server didn't apply it
             if search_val and search_col == "name":
                 q = search_val.lower()
                 if filter_mode == "exact":
-                    configs = [c for c in configs if (c.get("displayName") or "").lower() == q]
+                    compact = [c for c in compact if (c.get("displayName") or "").lower() == q]
                 else:
-                    configs = [c for c in configs if q in (c.get("displayName") or "").lower()]
-            return {"data": configs, "totalCount": len(configs)}
+                    compact = [c for c in compact if q in (c.get("displayName") or "").lower()]
+            return {"data": compact, "totalCount": len(compact)}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -86,7 +96,7 @@ class ConfigTools:
                 cyperf.StartAgentsBatchDeleteRequestInner(id=cid)
                 for cid in config_ids
             ]
-            result = self.api.start_configs_batch_delete(items=items)
+            result = self.api.start_configs_batch_delete(start_agents_batch_delete_request_inner=items)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)

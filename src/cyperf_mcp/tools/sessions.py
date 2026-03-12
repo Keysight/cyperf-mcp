@@ -166,21 +166,11 @@ class SessionTools:
 
     def add_applications(self, session_id: str, traffic_profile_id: str,
                          app_names: list[str]):
-        """Look up apps by name, then add them to the traffic profile via DynamicModel."""
+        """Look up apps by name, then add them to the traffic profile."""
         try:
             resources_api = self._client.resources
-            session = self.api.get_session_by_id(session_id)
 
-            if not session.config.config.traffic_profiles:
-                session.config.config.traffic_profiles.append(
-                    cyperf.ApplicationProfile(name="Application Profile")
-                )
-                session.config.config.traffic_profiles.update()
-
-            app_profile = session.config.config.traffic_profiles[
-                int(traffic_profile_id) - 1
-            ]
-
+            resource_infos = []
             added = []
             skipped = []
             for name in app_names:
@@ -188,26 +178,36 @@ class SessionTools:
                     search_col="Name", search_val=name
                 )
                 if not len(apps_result):
-                    return {"error": True, "message": f"Application '{name}' not found"}
+                    skipped.append({
+                        "name": name, "reason": "Application not found"
+                    })
+                    continue
                 app = _best_match(name, apps_result)
                 matched_name = app.name if hasattr(app, 'name') else str(app.id)
-                # Validate the resource URL exists before adding
+                # Validate the resource exists before adding
                 try:
-                    resources_api.get_resources_apps_by_id(app.id)
+                    resources_api.get_resources_app_by_id(app.id)
                 except Exception:
                     skipped.append({
                         "name": name, "matched": matched_name,
                         "reason": f"Resource id={app.id} not found on server (404)"
                     })
                     continue
-                app_profile.applications.append(
-                    cyperf.Application(
-                        external_resource_url=app.id, objective_weight=1
+                resource_infos.append(
+                    cyperf.ExternalResourceInfo(
+                        external_resource_url=str(app.id)
                     )
                 )
                 added.append(matched_name)
 
-            app_profile.applications.update()
+            if resource_infos:
+                operation = self.api.start_config_add_applications(
+                    session_id=session_id,
+                    traffic_profile_id=traffic_profile_id,
+                    external_resource_info=resource_infos,
+                )
+                await_and_serialize(operation)
+
             result = {"result": "completed", "applications_added": added}
             if skipped:
                 result["skipped"] = skipped
@@ -246,7 +246,7 @@ class SessionTools:
                 matched_name = attack.name if hasattr(attack, 'name') else str(attack.id)
                 # Validate the resource URL exists before adding
                 try:
-                    resources_api.get_resources_attacks_by_id(attack.id)
+                    resources_api.get_resources_attack_by_id(attack.id)
                 except Exception:
                     skipped.append({
                         "name": name, "matched": matched_name,

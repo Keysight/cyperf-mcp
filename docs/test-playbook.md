@@ -305,6 +305,62 @@ sessions_delete(session_id)
 
 ---
 
+### Scenario 10 — Real World Age Group Mix (1000 Simulated Users)
+
+**Script:** N/A (built interactively via MCP tools)
+**Config:** `appsec-416`
+**Base config:** `appsec-consumer-internet-traffic-mix`
+**Purpose:** Simulate realistic internet traffic from different age demographics — teens, young adults, working adults, and seniors — with 1000 concurrent users.
+
+**Age group app mapping:**
+
+| Age Group | Apps |
+|-----------|------|
+| Teens (13-17) | TikTok, Instagram, Snapchat Web Chrome, Youtube Chrome |
+| Young Adults (18-30) | Netflix, X.com, Facebook Chrome, Youtube Music, Amazon E-commerce |
+| Working Adults (30-50) | Office365 Outlook Chrome, Office365 OneDrive Chrome, Microsoft Teams Presenter - New User, LinkedIn, Microsoft Whiteboard |
+| Seniors / General | AOL Mail (x3), Gettr IE, EpixNow Edge, Facebook Audio Edge |
+| Infrastructure | SMTP (x2), POP3, DNS Flood |
+
+```
+# Start from consumer internet traffic mix base (keeps existing 11 apps)
+sessions_create(config_url="appsec-consumer-internet-traffic-mix")
+
+# Add age-group apps one at a time (batch fails if any single app errors)
+sessions_add_applications(session_id, app_names=["TikTok"])
+sessions_add_applications(session_id, app_names=["Instagram"])
+sessions_add_applications(session_id, app_names=["Snapchat Web Chrome"])
+sessions_add_applications(session_id, app_names=["Youtube Chrome"])
+sessions_add_applications(session_id, app_names=["Netflix"])
+sessions_add_applications(session_id, app_names=["X.com"])
+sessions_add_applications(session_id, app_names=["Facebook Chrome"])
+sessions_add_applications(session_id, app_names=["Youtube Music"])
+sessions_add_applications(session_id, app_names=["Amazon E-commerce"])
+sessions_add_applications(session_id, app_names=["Office365 Outlook Chrome"])
+sessions_add_applications(session_id, app_names=["Office365 OneDrive Chrome"])
+sessions_add_applications(session_id, app_names=["Microsoft Teams Attendee - Video Meeting"])
+sessions_add_applications(session_id, app_names=["LinkedIn"])
+
+# ... assign agents, set static IPs (standard config)
+sessions_set_objective_and_timeline(session_id,
+    objective_type="SIMULATED_USERS", objective_value=1000, duration=120)
+test_start(session_id)
+# Long-lived sessions — stop manually after ~140s
+test_stop(session_id)
+results_stats(result_id, stat_id="client-traffic-profile")
+sessions_save_config(session_id, name="Real World Age Group Mix")
+sessions_delete(session_id)
+```
+
+**Notes:**
+- Some apps (Google Docs, Gmail Chrome, CNN, Google Search) return 404 on this controller — excluded from the mix
+- Add apps individually to isolate failures (batch add is all-or-nothing)
+- Base config contributes 11 pre-existing apps (AOL Mail, SMTP, POP3, DNS Flood, etc.)
+
+**Expected:** All 24 apps generate traffic. Netflix dominates bandwidth (~3 GB). DNS Flood runs ~31M flows. Some web app session timeouts expected at 1000 users on a single agent pair.
+
+---
+
 ## Part B — Tool Smoke Tests
 
 Quick targeted tests for individual tool categories that aren't fully
@@ -427,7 +483,7 @@ migration_import(file_path="/path/to/backup.zip")
 
 | Category | Tools | Covered by |
 |----------|-------|------------|
-| Sessions | 28 | Scenarios 1-9 |
+| Sessions | 28 | Scenarios 1-10 |
 | Resources | 19 | Scenarios 1, 8, B1 |
 | Licensing | 17 | Scenario 1, B4 |
 | Agents | 11 | All scenarios (agent assign), B2 |
@@ -443,7 +499,7 @@ migration_import(file_path="/path/to/backup.zip")
 | Certificates | 3 | B8 |
 | Migration | 2 | B9 |
 
-**Total: 140 tools across 9 end-to-end scenarios + 9 smoke tests**
+**Total: 140 tools across 10 end-to-end scenarios + 9 smoke tests**
 
 ---
 
@@ -477,3 +533,4 @@ These are the most useful stat IDs to check after a test run:
 | `appsec-office365-onedrive-simulated-users` | Office 365 OneDrive |
 | `appsec-appmix-and-attack` | AppMix + attack base (for WAF validation) |
 | `appsec-https-tls1.3-throughput-aws-within-vpc-c5n.9xlarge-(aes-256-gcm-sha384)` | TLS 1.3 throughput |
+| `appsec-416` | Real World Age Group Mix (24 apps, 1000 users) |

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import cyperf
 from ..client import CyPerfClientManager
 from ..helpers import serialize_response, handle_api_error, handle_exception, await_and_serialize
@@ -19,15 +21,59 @@ class TestOpsTools:
     def sessions_api(self) -> cyperf.SessionsApi:
         return self._client.sessions
 
+    def _disable_auto_ip_on_segments(self, session_id: str, segment_names: list[str]):
+        """Disable ip_auto on the named network segments."""
+        session = self.sessions_api.get_session_by_id(session_id)
+        disabled = []
+        for net_profile in session.config.config.network_profiles:
+            for ip_net in net_profile.ip_network_segment:
+                name = ip_net.base_model.name
+                if name in segment_names and ip_net.ip_ranges[0].base_model.ip_auto:
+                    ip_net.ip_ranges[0].ip_auto = False
+                    ip_net.update()
+                    disabled.append(name)
+        return disabled
+
     def start(self, session_id: str):
-        """Start a test run (mirrors utils.start_test using await_completion)."""
+        """Start a test run. Auto-fixes NETMASK errors by disabling ip_auto and retrying."""
         try:
             result = self.api.start_test_run_start(session_id=session_id)
             return await_and_serialize(result)
-        except cyperf.ApiException as e:
-            return handle_api_error(e)
-        except Exception as e:
-            return handle_exception(e)
+        except Exception as first_err:
+            # Check if the failure is a NETMASK error on auto-IP segments
+            try:
+                test_info = self.sessions_api.get_session_test(session_id)
+                details = getattr(test_info.base_model, 'test_details', '') or ''
+            except Exception:
+                details = ''
+
+            if 'could not find NETMASK' not in details:
+                if isinstance(first_err, cyperf.ApiException):
+                    return handle_api_error(first_err)
+                return handle_exception(first_err)
+
+            # Parse affected segment names from error like "[IP Network 2]"
+            affected = re.findall(r"\[([^\]]+)\]", details)
+            if not affected:
+                return handle_exception(first_err)
+
+            disabled = self._disable_auto_ip_on_segments(session_id, affected)
+            if not disabled:
+                return handle_exception(first_err)
+
+            # Retry the start after disabling auto IP
+            try:
+                result = self.api.start_test_run_start(session_id=session_id)
+                ret = await_and_serialize(result)
+                ret["auto_fix_applied"] = (
+                    f"Disabled automatic IP on segments {disabled} "
+                    f"due to NETMASK error, then retried successfully"
+                )
+                return ret
+            except cyperf.ApiException as e:
+                return handle_api_error(e)
+            except Exception as e:
+                return handle_exception(e)
 
     def stop(self, session_id: str):
         """Stop a test run (mirrors utils.stop_test using await_completion)."""

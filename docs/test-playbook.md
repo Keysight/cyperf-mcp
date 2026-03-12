@@ -3,7 +3,7 @@
 Use cases verified against the CyPerf MCP server. Each scenario lists the
 exact MCP tool calls in order so they can be replayed to regression-test the tools.
 
-Reference scripts in `scripts/` implement these same scenarios using the SDK directly.
+Reference scripts in `comparative-studies/scripts/` implement these same scenarios using the SDK directly.
 
 ---
 
@@ -129,7 +129,7 @@ sessions_delete(session_id)
 
 ### Scenario 2 — LLM API Stress Test (from saved config)
 
-**Script:** `scripts/test_llm_api_stress.py`
+**Script:** `comparative-studies/scripts/test_llm_api_stress.py`
 **Config:** `appsec-276`
 **Purpose:** Reload the saved LLM AppMix config and re-run it. Validates config loading and the full test lifecycle with a pre-built config.
 
@@ -151,7 +151,7 @@ sessions_delete(session_id)
 
 ### Scenario 3 — AI Prompt Injection Attacks (attack-only)
 
-**Script:** `scripts/test_ai_prompt_injection.py`
+**Script:** `comparative-studies/scripts/test_ai_prompt_injection.py`
 **Config:** `appsec-all-dan-ai-prompt-injection-attacks`
 **Purpose:** Attack-only config with no traffic profile. Validates attack execution without apps.
 
@@ -171,7 +171,7 @@ sessions_delete(session_id)
 
 ### Scenario 4 — Enterprise Datacenter Traffic Mix
 
-**Script:** `scripts/test_enterprise_mix.py`
+**Script:** `comparative-studies/scripts/test_enterprise_mix.py`
 **Config:** `appsec-enterprise-datacenter-traffic-mix`
 **Purpose:** Broad application mix simulating enterprise datacenter traffic. Long-lived sessions.
 
@@ -193,7 +193,7 @@ sessions_delete(session_id)
 
 ### Scenario 5 — DDoS DNS Flood
 
-**Script:** `scripts/test_ddos_dns_flood.py`
+**Script:** `comparative-studies/scripts/test_ddos_dns_flood.py`
 **Config:** `appsec-ddos---dns-flood`
 **Purpose:** High-volume DNS flood test. Validates UDP-based attack traffic.
 
@@ -214,7 +214,7 @@ sessions_delete(session_id)
 
 ### Scenario 6 — Office 365 Outlook (Simulated Users)
 
-**Script:** `scripts/test_office365_outlook.py`
+**Script:** `comparative-studies/scripts/test_office365_outlook.py`
 **Config:** `appsec-office365-outlook-simulated-users`
 **Purpose:** Connection-heavy Office 365 Outlook simulation.
 
@@ -235,7 +235,7 @@ sessions_delete(session_id)
 
 ### Scenario 7 — Office 365 OneDrive (Simulated Users)
 
-**Script:** `scripts/test_office365_onedrive.py`
+**Script:** `comparative-studies/scripts/test_office365_onedrive.py`
 **Config:** `appsec-office365-onedrive-simulated-users`
 **Purpose:** Upload-heavy Office 365 OneDrive simulation.
 
@@ -256,7 +256,7 @@ sessions_delete(session_id)
 
 ### Scenario 8 — WAF Validation (AppMix + Attacks)
 
-**Script:** `scripts/test_waf_validation.py`
+**Script:** `comparative-studies/scripts/test_waf_validation.py`
 **Config:** `appsec-appmix-and-attack`
 **Purpose:** Mixed traffic and attack test for WAF validation. Adds extra apps and attacks on top of the saved config.
 
@@ -285,7 +285,7 @@ sessions_delete(session_id)
 
 ### Scenario 9 — TLS 1.3 Throughput (AES-256-GCM-SHA384)
 
-**Script:** `scripts/test_tls_throughput.py`
+**Script:** `comparative-studies/scripts/test_tls_throughput.py`
 **Config:** `appsec-https-tls1.3-throughput-aws-within-vpc-c5n.9xlarge-(aes-256-gcm-sha384)`
 **Purpose:** Sustained throughput test targeting 10 Gbps over TLS 1.3. Includes time-series throughput analysis.
 

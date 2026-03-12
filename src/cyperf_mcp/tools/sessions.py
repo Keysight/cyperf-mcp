@@ -1,8 +1,31 @@
 from __future__ import annotations
 
+from difflib import SequenceMatcher
+
 import cyperf
 from ..client import CyPerfClientManager
 from ..helpers import serialize_response, handle_api_error, handle_exception, await_and_serialize, build_list_kwargs
+
+
+def _best_match(query: str, candidates):
+    """Return the candidate with the best name match for *query*.
+
+    Exact (case-insensitive) match wins outright.  Otherwise the candidate
+    whose name is most similar to the query (by SequenceMatcher ratio) is
+    returned, so "Microsoft Teams Attendee - Audio Call" will prefer
+    "Microsoft Teams Attendee - Audio Meeting" over an unrelated Teams app.
+    """
+    query_lower = query.lower()
+    best, best_score = None, -1.0
+    for c in candidates:
+        cname = c.name if hasattr(c, 'name') else ''
+        cname_lower = cname.lower()
+        if cname_lower == query_lower:
+            return c                       # exact match – done
+        score = SequenceMatcher(None, query_lower, cname_lower).ratio()
+        if score > best_score:
+            best, best_score = c, score
+    return best if best is not None else candidates[0]
 
 
 class SessionTools:
@@ -159,30 +182,36 @@ class SessionTools:
             ]
 
             added = []
+            skipped = []
             for name in app_names:
                 apps_result = resources_api.get_resources_apps(
                     search_col="Name", search_val=name
                 )
                 if not len(apps_result):
                     return {"error": True, "message": f"Application '{name}' not found"}
-                # Prefer exact name match over substring match
-                app = None
-                for candidate in apps_result:
-                    cname = candidate.name if hasattr(candidate, 'name') else ''
-                    if cname.lower() == name.lower():
-                        app = candidate
-                        break
-                if app is None:
-                    app = apps_result[0]
+                app = _best_match(name, apps_result)
+                matched_name = app.name if hasattr(app, 'name') else str(app.id)
+                # Validate the resource URL exists before adding
+                try:
+                    resources_api.get_resources_apps_by_id(app.id)
+                except Exception:
+                    skipped.append({
+                        "name": name, "matched": matched_name,
+                        "reason": f"Resource id={app.id} not found on server (404)"
+                    })
+                    continue
                 app_profile.applications.append(
                     cyperf.Application(
                         external_resource_url=app.id, objective_weight=1
                     )
                 )
-                added.append(name)
+                added.append(matched_name)
 
             app_profile.applications.update()
-            return {"result": "completed", "applications_added": added}
+            result = {"result": "completed", "applications_added": added}
+            if skipped:
+                result["skipped"] = skipped
+            return result
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -206,28 +235,34 @@ class SessionTools:
             ]
 
             added = []
+            skipped = []
             for name in attack_names:
                 attacks_result = resources_api.get_resources_attacks(
                     search_col="Name", search_val=name
                 )
                 if not len(attacks_result):
                     return {"error": True, "message": f"Attack '{name}' not found"}
-                # Prefer exact name match over substring match
-                attack = None
-                for candidate in attacks_result:
-                    cname = candidate.name if hasattr(candidate, 'name') else ''
-                    if cname.lower() == name.lower():
-                        attack = candidate
-                        break
-                if attack is None:
-                    attack = attacks_result[0]
+                attack = _best_match(name, attacks_result)
+                matched_name = attack.name if hasattr(attack, 'name') else str(attack.id)
+                # Validate the resource URL exists before adding
+                try:
+                    resources_api.get_resources_attacks_by_id(attack.id)
+                except Exception:
+                    skipped.append({
+                        "name": name, "matched": matched_name,
+                        "reason": f"Resource id={attack.id} not found on server (404)"
+                    })
+                    continue
                 attack_profile.attacks.append(
                     cyperf.Attack(external_resource_url=attack.id)
                 )
-                added.append(name)
+                added.append(matched_name)
 
             attack_profile.attacks.update()
-            return {"result": "completed", "attacks_added": added}
+            result = {"result": "completed", "attacks_added": added}
+            if skipped:
+                result["skipped"] = skipped
+            return result
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:

@@ -168,6 +168,14 @@ class SessionTools:
                          app_names: list[str]):
         """Look up apps by name, then add them to the traffic profile."""
         try:
+            # Auto-create traffic profile if none exists (e.g. after delete)
+            session = self.api.get_session_by_id(session_id)
+            if not session.config.config.traffic_profiles:
+                session.config.config.traffic_profiles.append(
+                    cyperf.TrafficProfile(name="Traffic Profile")
+                )
+                session.config.config.traffic_profiles.update()
+
             resources_api = self._client.resources
 
             resource_infos = []

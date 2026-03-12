@@ -172,7 +172,7 @@ class SessionTools:
             session = self.api.get_session_by_id(session_id)
             if not session.config.config.traffic_profiles:
                 session.config.config.traffic_profiles.append(
-                    cyperf.TrafficProfile(name="Traffic Profile")
+                    cyperf.ApplicationProfile(name="Traffic Profile")
                 )
                 session.config.config.traffic_profiles.update()
 
@@ -617,7 +617,9 @@ class SessionTools:
             return handle_exception(e)
 
     def set_objective_and_timeline(self, session_id: str, objective_type: str = "SIMULATED_USERS",
-                                   objective_value: int = 100, duration: int = 600):
+                                   objective_value: int = 100, duration: int = 600,
+                                   ramp_up_duration: int | None = None,
+                                   ramp_down_duration: int | None = None):
         """Set test objective and timeline via DynamicModel (mirrors utils.set_objective_and_timeline)."""
         try:
             session = self.api.get_session_by_id(session_id)
@@ -631,9 +633,18 @@ class SessionTools:
                 ):
                     segment.duration = duration
                     segment.objective_value = objective_value
+                elif segment.segment_type == cyperf.SegmentType.STEPUPSEGMENT and ramp_up_duration is not None:
+                    segment.duration = ramp_up_duration
+                elif segment.segment_type == cyperf.SegmentType.STEPDOWNSEGMENT and ramp_down_duration is not None:
+                    segment.duration = ramp_down_duration
             primary_objective.update()
-            return {"result": "Objective and timeline updated",
-                    "type": objective_type, "value": objective_value, "duration": duration}
+            result = {"result": "Objective and timeline updated",
+                      "type": objective_type, "value": objective_value, "duration": duration}
+            if ramp_up_duration is not None:
+                result["ramp_up_duration"] = ramp_up_duration
+            if ramp_down_duration is not None:
+                result["ramp_down_duration"] = ramp_down_duration
+            return result
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -999,17 +1010,22 @@ def register(mcp, client: CyPerfClientManager):
     def sessions_set_objective_and_timeline(session_id: str,
                                             objective_type: str = "SIMULATED_USERS",
                                             objective_value: int = 100,
-                                            duration: int = 600) -> dict:
-        """[Sessions] Set test objective type, value, and duration.
+                                            duration: int = 600,
+                                            ramp_up_duration: int | None = None,
+                                            ramp_down_duration: int | None = None) -> dict:
+        """[Sessions] Set test objective type, value, and duration with optional ramp control.
 
         Args:
             session_id: The session identifier
             objective_type: Objective type (e.g. 'SIMULATED_USERS', 'THROUGHPUT')
             objective_value: Target value for the objective
-            duration: Test duration in seconds
+            duration: Test duration in seconds (steady state)
+            ramp_up_duration: Ramp-up duration in seconds (StepUpSegment). Use 1 for instant ramp-up.
+            ramp_down_duration: Ramp-down duration in seconds (StepDownSegment).
         """
         return tools.set_objective_and_timeline(session_id, objective_type,
-                                                objective_value, duration)
+                                                objective_value, duration,
+                                                ramp_up_duration, ramp_down_duration)
 
     # Note: test_init, test_end, prepare_test are available via test_ops tools
     # (test_init, test_end, test_prepare) to avoid duplication.

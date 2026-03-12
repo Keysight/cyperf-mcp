@@ -93,14 +93,14 @@ sessions_remove_app_action(session_id, action_id=<POST_action_id>)
 sessions_set_app_action_param(session_id, action_id=<GET_action_id>,
     param_name="Response Body Size", param_value="1000000")
 
-# Add 6 LLM attacks
+# Add 6 LLM attacks (3 DAN bundles + 3 Forbidden Questions)
 sessions_add_attacks(session_id, attack_names=[
-    "DAN Jailbreak Attack on LLM - Variant 1",
-    "DAN Jailbreak Attack on LLM - Variant 2",
-    "DAN Jailbreak Attack on LLM - Variant 3",
-    "Forbidden Questions Attack on LLM - Variant 1",
-    "Forbidden Questions Attack on LLM - Variant 2",
-    "Forbidden Questions Attack on LLM - Variant 3"
+    "All DAN OpenAI ChatGPT AI LLM Prompt Injection",
+    "All DAN Gemini AI LLM Prompt Injection",
+    "All DAN Grok AI LLM Prompt Injection",
+    "OpenAI ChatGPT Forbidden Questions AI LLM Prompt Injection",
+    "Gemini Forbidden Questions AI LLM Prompt Injection",
+    "Grok Forbidden Questions AI LLM Prompt Injection"
 ])
 
 # Assign agents, configure network (standard config)
@@ -427,7 +427,7 @@ migration_import(file_path="/path/to/backup.zip")
 
 | Category | Tools | Covered by |
 |----------|-------|------------|
-| Sessions | 31 | Scenarios 1-9 |
+| Sessions | 28 | Scenarios 1-9 |
 | Resources | 19 | Scenarios 1, 8, B1 |
 | Licensing | 17 | Scenario 1, B4 |
 | Agents | 11 | All scenarios (agent assign), B2 |
@@ -438,9 +438,9 @@ migration_import(file_path="/path/to/backup.zip")
 | Test ops | 7 | All scenarios |
 | Notifications | 6 | B5 |
 | Brokers | 5 | B6 |
+| Statistics | 4 | All scenarios |
 | Diagnostics | 3 | B5 |
 | Certificates | 3 | B8 |
-| Statistics | 2 | All scenarios |
 | Migration | 2 | B9 |
 
 **Total: 140 tools across 9 end-to-end scenarios + 9 smoke tests**

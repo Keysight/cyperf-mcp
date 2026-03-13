@@ -199,7 +199,7 @@ class ResourceTools:
             kwargs = {}
             if take is not None:
                 kwargs["take"] = take
-            result = self.api.get_resources_pcap(**kwargs)
+            result = self.api.get_resources_pcaps(**kwargs)
             return serialize_response(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -213,8 +213,25 @@ class ResourceTools:
                 kwargs["take"] = take
             if skip is not None:
                 kwargs["skip"] = skip
-            result = self.api.get_resources_http_profiles(**kwargs)
-            return serialize_response(result)
+            try:
+                result = self.api.get_resources_http_profiles(**kwargs)
+                return serialize_response(result)
+            except Exception:
+                # SDK Pydantic deserialization fails on empty enums/missing fields;
+                # fall back to raw REST call with auth
+                import json
+                api_client = self.api.api_client
+                host = api_client.configuration.host
+                auth = {"Authorization": f"Bearer {api_client.configuration.access_token}",
+                        "Accept": "application/json"}
+                resp = api_client.rest_client.request("GET", f"{host}/api/v2/resources/http-profiles",
+                    headers=auth)
+                resp.read()
+                raw = resp.data if isinstance(resp.data, str) else resp.data.decode("utf-8")
+                data = json.loads(raw)
+                if isinstance(data, list):
+                    return [{"id": p.get("id"), "Type": p.get("Type")} for p in data if isinstance(p, dict)]
+                return data
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:

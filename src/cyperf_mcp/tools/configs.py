@@ -115,7 +115,7 @@ class ConfigTools:
     def import_all(self, file_path: str):
         try:
             op = cyperf.ImportAllOperation(file_path=file_path)
-            result = self.api.start_configs_import_all(operation=op)
+            result = self.api.start_configs_import_all(import_all_operation=op)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -126,8 +126,8 @@ class ConfigTools:
         try:
             op = cyperf.ExportAllOperation()
             if config_ids:
-                op.ids = config_ids
-            result = self.api.start_configs_export_all(operation=op)
+                op.config_ids = [cyperf.ConfigId(id=cid) for cid in config_ids]
+            result = self.api.start_configs_export_all(export_all_operation=op)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)

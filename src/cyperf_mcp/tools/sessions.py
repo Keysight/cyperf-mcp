@@ -129,8 +129,8 @@ class SessionTools:
 
     def load_config(self, session_id: str, config_url: str):
         try:
-            op = cyperf.LoadConfigOperationInput(config_url=config_url)
-            result = self.api.start_session_load_config(session_id, operation=op)
+            op = cyperf.LoadConfigOperation(config_url=config_url)
+            result = self.api.start_session_load_config(session_id, load_config_operation=op)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)

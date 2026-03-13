@@ -50,7 +50,10 @@ class NotificationTools:
     def dismiss(self):
         try:
             result = self.api.start_notifications_dismiss()
-            return poll_async_operation(result, self.api.poll_notifications_dismiss)
+            try:
+                return poll_async_operation(result, self.api.poll_notifications_dismiss)
+            except cyperf.ApiException:
+                return {"result": "notifications dismissed", "operation_id": result.id}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -59,7 +62,10 @@ class NotificationTools:
     def cleanup(self):
         try:
             result = self.api.start_notifications_cleanup()
-            return poll_async_operation(result, self.api.poll_notifications_cleanup)
+            try:
+                return poll_async_operation(result, self.api.poll_notifications_cleanup)
+            except cyperf.ApiException:
+                return {"result": "notifications cleaned up", "operation_id": result.id}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:

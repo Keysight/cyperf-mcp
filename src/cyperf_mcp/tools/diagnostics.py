@@ -28,8 +28,9 @@ class DiagnosticsTools:
         try:
             context = None
             if component_names:
-                context = cyperf.DiagnosticComponentContext(components=component_names)
-            result = self.api.api_v2_diagnostics_operations_export_post(context=context)
+                components = [cyperf.DiagnosticComponent(component_name=n) for n in component_names]
+                context = cyperf.DiagnosticComponentContext(component_list=components)
+            result = self.api.api_v2_diagnostics_operations_export_post(diagnostic_component_context=context)
             return serialize_response(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)

@@ -25,8 +25,12 @@ class StatisticsTools:
             result = self.api.get_stats_plugins(**kwargs)
             return serialize_response(result)
         except cyperf.ApiException as e:
+            if "text/html" in str(e.body or ""):
+                return {"error": True, "message": "Stats plugins endpoint returned HTML — this endpoint may not be supported on this controller version"}
             return handle_api_error(e)
         except Exception as e:
+            if "text/html" in str(e) or "Expecting value" in str(e):
+                return {"error": True, "message": "Stats plugins endpoint returned non-JSON response — this endpoint may not be supported on this controller version"}
             return handle_exception(e)
 
     def create_plugin(self, plugin_data: dict):
@@ -51,7 +55,7 @@ class StatisticsTools:
     def ingest(self, operation_data: dict):
         try:
             op = cyperf.IngestOperation(**operation_data)
-            result = self.api.start_stats_plugins_ingest(operation=op)
+            result = self.api.start_stats_plugins_ingest(ingest_operation=op)
             return poll_async_operation(result, self.api.poll_stats_plugins_ingest)
         except cyperf.ApiException as e:
             return handle_api_error(e)

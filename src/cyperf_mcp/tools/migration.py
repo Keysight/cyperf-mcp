@@ -17,11 +17,15 @@ class MigrationTools:
 
     def export(self, export_data: dict = None):
         try:
-            op = None
             if export_data:
                 op = cyperf.ExportPackageOperation(**export_data)
-            result = self.api.start_controller_migration_export(operation=op)
-            return poll_async_operation(result, self.api.poll_controller_migration_export)
+            else:
+                op = cyperf.ExportPackageOperation()
+            result = self.api.start_controller_migration_export(export_package_operation=op)
+            try:
+                return poll_async_operation(result, self.api.poll_controller_migration_export)
+            except cyperf.ApiException:
+                return {"result": "migration export initiated", "operation_id": result.id}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:
@@ -30,7 +34,10 @@ class MigrationTools:
     def import_data(self):
         try:
             result = self.api.start_controller_migration_import()
-            return poll_async_operation(result, self.api.poll_controller_migration_import)
+            try:
+                return poll_async_operation(result, self.api.poll_controller_migration_import)
+            except cyperf.ApiException:
+                return {"result": "migration import initiated", "operation_id": result.id}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:

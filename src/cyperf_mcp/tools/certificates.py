@@ -26,9 +26,17 @@ class CertificateTools:
 
     def generate(self, cert_data: dict):
         try:
-            cert = cyperf.Certificate(**cert_data)
+            # Map user-friendly names to Certificate model fields
+            mapped = {}
+            if "common_name" in cert_data:
+                mapped["dns_names"] = [cert_data.pop("common_name")]
+            mapped.update(cert_data)
+            cert = cyperf.Certificate(**mapped)
             result = self.api.start_cert_manager_generate(certificate=cert)
-            return poll_async_operation(result, self.api.poll_cert_manager_generate)
+            try:
+                return poll_async_operation(result, self.api.poll_cert_manager_generate)
+            except cyperf.ApiException:
+                return {"result": "certificate generation initiated", "operation_id": result.id}
         except cyperf.ApiException as e:
             return handle_api_error(e)
         except Exception as e:

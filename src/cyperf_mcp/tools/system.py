@@ -85,7 +85,7 @@ class SystemTools:
         try:
             eula = self.api.get_eula()
             summary = cyperf.EulaSummary(accepted=True)
-            result = self.api.post_eula(eula=summary)
+            result = self.api.post_eula(eula_summary=summary)
             return serialize_response(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -104,7 +104,7 @@ class SystemTools:
     def set_log_config(self, config_data: dict):
         try:
             config = cyperf.LogConfig(**config_data)
-            result = self.api.update_log_config(config=config)
+            result = self.api.update_log_config(log_config=config)
             return serialize_response(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)

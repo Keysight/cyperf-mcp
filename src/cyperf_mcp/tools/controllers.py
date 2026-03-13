@@ -83,7 +83,7 @@ class ControllerTools:
     def set_app(self, controller_id: str, app_id: str):
         try:
             op = cyperf.SetAppOperation(controller_id=controller_id, app_id=app_id)
-            result = self.api.start_controllers_set_app(operation=op)
+            result = self.api.start_controllers_set_app(set_app_operation=op)
             return poll_async_operation(result, self.api.poll_controllers_set_app)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -93,7 +93,7 @@ class ControllerTools:
     def clear_ports(self, controller_id: str):
         try:
             op = cyperf.ClearPortsOwnershipOperation(controller_id=controller_id)
-            result = self.api.start_controllers_clear_port_ownership(operation=op)
+            result = self.api.start_controllers_clear_port_ownership(clear_ports_ownership_operation=op)
             return poll_async_operation(result, self.api.poll_controllers_clear_port_ownership)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -103,7 +103,7 @@ class ControllerTools:
     def power_cycle(self, controller_id: str, node_ids: list[str]):
         try:
             op = cyperf.NodesPowerCycleOperation(controller_id=controller_id, node_ids=node_ids)
-            result = self.api.start_controllers_power_cycle_nodes(operation=op)
+            result = self.api.start_controllers_power_cycle_nodes(nodes_power_cycle_operation=op)
             return poll_async_operation(result, self.api.poll_controllers_power_cycle_nodes)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -113,7 +113,7 @@ class ControllerTools:
     def reboot_port(self, controller_id: str, port_id: str):
         try:
             op = cyperf.RebootPortsOperation(controller_id=controller_id, port_ids=[port_id])
-            result = self.api.start_controllers_reboot_port(operation=op)
+            result = self.api.start_controllers_reboot_port(reboot_ports_operation=op)
             return poll_async_operation(result, self.api.poll_controllers_reboot_port)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -125,7 +125,7 @@ class ControllerTools:
             op = cyperf.SetLinkStateOperation(
                 controller_id=controller_id, port_id=port_id, state=state
             )
-            result = self.api.start_controllers_set_port_link_state(operation=op)
+            result = self.api.start_controllers_set_port_link_state(set_link_state_operation=op)
             return poll_async_operation(result, self.api.poll_controllers_set_port_link_state)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -137,7 +137,7 @@ class ControllerTools:
             op = cyperf.SetAggregationModeOperation(
                 controller_id=controller_id, node_id=node_id, mode=mode
             )
-            result = self.api.start_controllers_set_node_aggregation(operation=op)
+            result = self.api.start_controllers_set_node_aggregation(set_aggregation_mode_operation=op)
             return poll_async_operation(result, self.api.poll_controllers_set_node_aggregation)
         except cyperf.ApiException as e:
             return handle_api_error(e)

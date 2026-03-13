@@ -70,7 +70,7 @@ class AgentTools:
     def reserve(self, agent_ids: list[str]):
         try:
             op = cyperf.ReserveOperationInput(agent_ids=agent_ids)
-            result = self.api.start_agents_reserve(operation=op)
+            result = self.api.start_agents_reserve(reserve_operation_input=op)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -80,7 +80,7 @@ class AgentTools:
     def release(self, agent_ids: list[str]):
         try:
             op = cyperf.ReleaseOperationInput(agent_ids=agent_ids)
-            result = self.api.start_agents_release(operation=op)
+            result = self.api.start_agents_release(release_operation_input=op)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -90,7 +90,7 @@ class AgentTools:
     def reboot(self, agent_ids: list[str]):
         try:
             op = cyperf.RebootOperationInput(agent_ids=agent_ids)
-            result = self.api.start_agents_reboot(operation=op)
+            result = self.api.start_agents_reboot(reboot_operation_input=op)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -100,7 +100,7 @@ class AgentTools:
     def set_dpdk(self, agent_ids: list[str], enabled: bool):
         try:
             op = cyperf.SetDpdkModeOperationInput(agent_ids=agent_ids, enabled=enabled)
-            result = self.api.start_agents_set_dpdk_mode(operation=op)
+            result = self.api.start_agents_set_dpdk_mode(set_dpdk_mode_operation_input=op)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -109,8 +109,8 @@ class AgentTools:
 
     def set_ntp(self, agent_ids: list[str], ntp_server: str):
         try:
-            op = cyperf.SetNtpOperationInput(agent_ids=agent_ids, ntp_server=ntp_server)
-            result = self.api.start_agents_set_ntp(operation=op)
+            op = cyperf.SetNtpOperationInput(agent_ids=agent_ids, servers=[ntp_server])
+            result = self.api.start_agents_set_ntp(set_ntp_operation_input=op)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -133,10 +133,21 @@ class AgentTools:
 
     def export_files(self, agent_ids: list[str], file_type: str = None):
         try:
-            op = cyperf.ExportFilesOperationInput(agent_ids=agent_ids)
-            if file_type:
-                op.file_type = file_type
-            result = self.api.start_agents_export_files(operation=op)
+            file_type_map = {"logs": "traffic_agent_log", "syslog": "syslog",
+                             "csvs": "csvs", "pcap": "packet_capture"}
+            requests_by_agent = {}
+            for aid in agent_ids:
+                ft_kwargs = {}
+                if file_type:
+                    key = file_type_map.get(file_type, file_type)
+                    ft_kwargs[key] = True
+                req = cyperf.ExportFilesRequest(
+                    agent_id=aid,
+                    required_file_types=cyperf.RequiredFileTypes(**ft_kwargs) if ft_kwargs else None,
+                )
+                requests_by_agent[aid] = [req]
+            op = cyperf.ExportFilesOperationInput(export_files_requests_by_agent=requests_by_agent)
+            result = self.api.start_agents_export_files(export_files_operation_input=op)
             return await_and_serialize(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)

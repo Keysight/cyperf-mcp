@@ -1,7 +1,7 @@
 # Future Tool Reductions (Medium Risk)
 
 These are deferred consolidation opportunities that could reduce the tool count
-further (~18 tools, from 132 → ~114) but carry medium risk due to complex
+further (~18 tools, from 131 → ~113) but carry medium risk due to complex
 conditional parameter schemas that may confuse AI assistants.
 
 ---
@@ -79,4 +79,4 @@ get/update/delete but not list/add; server data only for add/update.
 | 8. Consolidate resource browse | ~8 | resources.py |
 | 9. Merge profile management | ~6 | sessions.py |
 | 10. Merge licensing server CRUD | ~4 | licensing.py |
-| **Total** | **~18** | **132 → ~114** |
+| **Total** | **~18** | **131 → ~113** |

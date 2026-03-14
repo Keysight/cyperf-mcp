@@ -700,7 +700,6 @@ configs_list()
 configs_list(search_col="displayName", search_val="LLM", filter_mode="contains")
 configs_get(config_id="appsec-276")
 configs_export_all()
-configs_create(name="MCP Test Config")
 configs_update(config_id=<id>, name="MCP Test Config Renamed")
 configs_delete(config_ids=[<id>])
 ```
@@ -1257,9 +1256,8 @@ system_get_disk_usage()
 | | controllers_reboot_port | C2 |
 | | controllers_set_link_state | B6b |
 | | controllers_set_aggregation | B6b |
-| Configs (9) | configs_list | B3, B3b |
+| Configs (8) | configs_list | B3, B3b |
 | | configs_get | B3 |
-| | configs_create | B3 |
 | | configs_delete | B3, B3b, S14 |
 | | configs_update | B3 |
 | | configs_import | S14, B3b |
@@ -1313,7 +1311,7 @@ system_get_disk_usage()
 | Migration (2) | migration_export | B9 |
 | | migration_import | B9 |
 
-**Total: 140/140 tools covered across 15 end-to-end scenarios + 17 smoke tests + 4 destructive tests**
+**Total: 139/139 tools covered across 15 end-to-end scenarios + 17 smoke tests + 4 destructive tests**
 
 ---
 

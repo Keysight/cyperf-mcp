@@ -61,16 +61,6 @@ class ConfigTools:
         except Exception as e:
             return handle_exception(e)
 
-    def create(self, config_data: dict):
-        try:
-            config = cyperf.ConfigMetadata(**config_data)
-            result = self.api.create_configs(configs=[config])
-            return serialize_response(result)
-        except cyperf.ApiException as e:
-            return handle_api_error(e)
-        except Exception as e:
-            return handle_exception(e)
-
     def delete(self, config_id: str):
         try:
             self.api.delete_config(config_id)
@@ -177,15 +167,6 @@ def register(mcp, client: CyPerfClientManager):
             config_id: The configuration identifier
         """
         return tools.get(config_id)
-
-    @mcp.tool()
-    def configs_create(config_data: dict) -> dict:
-        """[Configurations] Create a new configuration.
-
-        Args:
-            config_data: Configuration properties (name, description, etc.)
-        """
-        return tools.create(config_data)
 
     @mcp.tool()
     def configs_delete(config_ids: list[str]) -> dict:

@@ -1,6 +1,6 @@
 # CyPerf MCP Server — Tool Reference
 
-Complete reference for all 140 tools. Parameters marked with `= None` are optional.
+Complete reference for all 139 tools. Parameters marked with `= None` are optional.
 
 Back to [README](../README.md).
 
@@ -203,11 +203,12 @@ Get the configuration of a session.
 
 ### `sessions_save_config`
 
-Save session configuration persistently. Polls async operation to completion.
+Save session configuration as a reusable config. This is the way to create new configurations — configure a session first, then save it with an optional name.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `session_id` | string | Yes | The session identifier |
+| `name` | string | No | Name for the saved configuration (creates a new named config) |
 
 ### `sessions_load_config`
 
@@ -277,7 +278,7 @@ Prepare a test for a session (pre-flight checks). Polls async operation to compl
 
 ---
 
-## Configurations — 10 tools
+## Configurations — 8 tools
 
 Manage saved test configurations (reusable templates).
 
@@ -299,14 +300,6 @@ Get a configuration by ID.
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `config_id` | string | Yes | The configuration identifier |
-
-### `configs_create`
-
-Create a new configuration.
-
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `config_data` | object | Yes | Configuration properties (`name`, `description`, etc.) |
 
 ### `configs_delete`
 

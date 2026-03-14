@@ -750,11 +750,11 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def sessions_save_config(session_id: str, name: str = None) -> dict:
-        """[Sessions] Save session configuration persistently.
+        """[Sessions] Save session configuration as a reusable config. This is the way to create new configurations — configure a session first, then save it.
 
         Args:
             session_id: The session identifier
-            name: Optional new name for the configuration before saving
+            name: Optional name for the saved configuration (creates a new named config)
         """
         return tools.save_config(session_id, name)
 

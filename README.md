@@ -1,6 +1,6 @@
 # CyPerf MCP Server
 
-An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **140 fine-grained tools** across 15 categories.
+An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **139 fine-grained tools** across 15 categories.
 
 AI assistants connected via MCP can orchestrate CyPerf tests, manage agents, analyze results, and perform security testing — all through natural language.
 
@@ -132,7 +132,7 @@ src/cyperf_mcp/
 
 The server wraps the [`cyperf`](https://pypi.org/project/cyperf/) Python SDK's API classes directly. Each tool module follows a class-based pattern where a `*Tools` class holds the API logic, and a `register()` function wires `@mcp.tool()` decorated functions to those methods. Session config manipulation uses the SDK's DynamicModel pattern for in-place updates.
 
-## Tool Catalog (140 tools)
+## Tool Catalog (139 tools)
 
 All tools use `category_action` naming. Parameters with `= None` are optional.
 
@@ -148,7 +148,7 @@ Manage test sessions, traffic/attack profiles, network segments, and test object
 | `sessions_delete` | Delete one or more sessions (stops running tests first) |
 | `sessions_update` | Update session properties |
 | `sessions_get_config` | Get session configuration |
-| `sessions_save_config` | Save session config (optionally with a new name) |
+| `sessions_save_config` | Save session as a reusable config (this is how to create new configs) |
 | `sessions_load_config` | Load a config into session |
 | `sessions_get_meta` | Get session metadata |
 | `sessions_get_test` | Get session test info (status, progress) |
@@ -189,7 +189,7 @@ Manage CyPerf test agents (virtual or hardware appliances).
 | `agents_tags` | List agent tags |
 | `agents_export_files` | Export agent files (logs, configs) |
 
-### Configurations — 9 tools
+### Configurations — 8 tools
 
 Manage saved test configurations (templates).
 
@@ -197,7 +197,6 @@ Manage saved test configurations (templates).
 |---|---|
 | `configs_list` | List configurations with optional search/filter |
 | `configs_get` | Get configuration by ID |
-| `configs_create` | Create a new configuration |
 | `configs_delete` | Delete one or more configurations |
 | `configs_update` | Update configuration metadata |
 | `configs_import` | Import a configuration file |

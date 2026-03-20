@@ -455,38 +455,28 @@ sessions_delete(session_id)
 
 ---
 
-### Scenario 13 — Test Lifecycle Control (init/prepare/calibrate/abort/end)
+### Scenario 13 — Test Lifecycle Control (start/abort/calibrate)
 
-**Purpose:** Exercises the granular test lifecycle tools that bypass the simple start/stop flow. Covers: `test_init`, `test_prepare`, `test_calibrate`, `test_abort`, `test_end`.
+**Purpose:** Exercises test lifecycle tools beyond simple start/stop. Covers: `test_start`, `test_abort`, `test_calibrate`.
 
 ```
 # Create session from a simple config
-sessions_create(config_url="appsec-276")
+sessions_create(config_url="appsec-appmix")
+sessions_add_applications(session_id, app_names=["HTTP App"])
 # ... assign agents, set static IPs (standard config)
 
-# --- Flow A: Manual init → prepare → start → abort ---
-test_init(session_id)
-# Expected: session transitions to INITIALIZING then INITIALIZED
-
-test_prepare(session_id)
-# Expected: session transitions to PREPARING then PREPARED (agents ready)
-
-# Start the test (requires PREPARED state)
+# --- Flow A: Start → abort (immediate halt, no ramp-down) ---
 test_start(session_id)
-# Let it run briefly (~10s)
+# Let it run briefly (~15s)
 
-# Abort instead of graceful stop (immediate halt, no ramp-down)
 test_abort(session_id)
 # Expected: test immediately terminates, session goes to STOPPED
-
-# End the test (releases resources, moves to FINISHED)
-test_end(session_id)
-# Expected: session transitions to FINISHED
 
 sessions_delete(session_id)
 
 # --- Flow B: Calibrate before test ---
-sessions_create(config_url="appsec-276")
+sessions_create(config_url="appsec-appmix")
+sessions_add_applications(session_id, app_names=["HTTP App"])
 # ... assign agents, set static IPs (standard config)
 
 # Calibrate adjusts agent performance parameters
@@ -502,19 +492,18 @@ test_stop(session_id)
 sessions_delete(session_id)
 ```
 
-**Expected:** Flow A: init→prepare→start→abort→end transitions succeed. Flow B: calibration completes without error, subsequent test runs normally.
+**Expected:** Flow A: start→abort terminates test immediately. Flow B: calibration completes without error, subsequent test runs normally.
 
 **Notes:**
 - `test_abort` is destructive — use only when graceful `test_stop` is insufficient
-- `test_init` and `test_prepare` split what `test_start` does automatically
-- `test_end` is only valid after test is stopped/aborted
 - `test_calibrate` is optional and adjusts agent-level settings before a run
+- `test_init`, `test_prepare`, and `test_end` were removed — `test_start` handles init+prepare automatically, and the controller auto-ends tests on stop/abort
 
 ---
 
 ### Scenario 14 — Config Import/Export Round-Trip
 
-**Purpose:** Exercises config import/export tools and categories. Covers: `configs_import`, `configs_import_all`, `configs_export_all`, `configs_categories`.
+**Purpose:** Exercises config import/export tools and categories. Covers: `configs_import` (with `import_all` flag), `configs_export_all`, `configs_categories`.
 
 ```
 # List config categories
@@ -534,7 +523,7 @@ configs_import(file_path="/tmp/exported-config.json")
 # Expected: new config created, returns config ID
 
 # Import all configs from a zip archive
-configs_import_all(file_path="/tmp/exported-configs.zip")
+configs_import(import_all=True,file_path="/tmp/exported-configs.zip")
 # Expected: all configs from the archive are imported
 
 # Verify imported configs appear in list
@@ -597,38 +586,38 @@ exercised by the end-to-end scenarios above.
 ```
 resources_list_apps()
 resources_list_apps(take=5, skip=0)
-resources_search_apps(query="HTTP")
-resources_search_apps(query="ChatGPT")
-resources_get_app(app_name="HTTP App")
+resources_search(resource_type="apps",query="HTTP")
+resources_search(resource_type="apps",query="ChatGPT")
+resources_get(resource_type="app",app_name="HTTP App")
 resources_list_attacks()
 resources_list_attacks(take=10, skip=0)
-resources_search_attacks(query="Jailbreak")
-resources_search_attacks(query="SQL Injection")
-resources_get_attack(attack_name="DAN Jailbreak Attack on LLM - Variant 1")
-resources_list_app_types()
-resources_list_attack_categories()
-resources_list_captures()
-resources_list_tls_certs()
-resources_list_pcaps()
-resources_list_payloads()
-resources_list_auth_profiles()
-resources_list_http_profiles()
-resources_list_custom_fuzzing()
+resources_search(resource_type="attacks",query="Jailbreak")
+resources_search(resource_type="attacks",query="SQL Injection")
+resources_get(resource_type="attack",attack_name="DAN Jailbreak Attack on LLM - Variant 1")
+resources_browse(resource_type="app_types")
+resources_browse(resource_type="attack_categories")
+resources_browse(resource_type="captures")
+resources_browse(resource_type="tls_certs")
+resources_browse(resource_type="pcaps")
+resources_browse(resource_type="payloads")
+resources_browse(resource_type="auth_profiles")
+resources_browse(resource_type="http_profiles")
+resources_browse(resource_type="custom_fuzzing")
 ```
 
 ### B1b — Resource CRUD (captures, TLS certs)
 
 ```
 # Captures: list → get → delete
-resources_list_captures()
-resources_get_capture(capture_id=<id>)
-resources_delete_capture(capture_id=<id>)
+resources_browse(resource_type="captures")
+resources_get(resource_type="capture",capture_id=<id>)
+resources_delete(resource_type="capture",capture_id=<id>)
 # Note: requires an existing capture from a prior test run
 
 # TLS certs: list → get → delete
-resources_list_tls_certs()
-resources_get_tls_cert(cert_id=<id>)
-resources_delete_tls_cert(tls_cert_id=<id>)
+resources_browse(resource_type="tls_certs")
+resources_get(resource_type="tls_cert",cert_id=<id>)
+resources_delete(resource_type="tls_cert",tls_cert_id=<id>)
 # Note: upload a test cert first via certs_upload or use an existing one
 ```
 
@@ -720,7 +709,7 @@ configs_import(file_path="/tmp/test-config.json")
 # Expected: new config created
 
 # Bulk import from archive
-configs_import_all(file_path="/tmp/configs-archive.zip")
+configs_import(import_all=True,file_path="/tmp/configs-archive.zip")
 # Expected: multiple configs imported
 
 # Clean up
@@ -806,10 +795,10 @@ licensing_get_hostid()
 
 ```
 system_get_time()
-system_get_disk_usage()
-system_list_disk_consumers()
-system_check_eula()
-system_get_log_config()
+system_disk_usage()
+system_disk_usage(detail=True)
+system_eula(action="check")
+system_log_config()
 notifications_list()
 notifications_get_counts()
 diagnostics_list_components()
@@ -819,18 +808,18 @@ diagnostics_list_components()
 
 ```
 # Accept EULA (idempotent — safe to call even if already accepted)
-system_accept_eula()
-system_check_eula()
+system_eula(action="accept")
+system_eula(action="check")
 # Expected: EULA status is "accepted"
 
 # Update log configuration
-system_get_log_config()
-system_set_log_config(config_data={"level": "DEBUG"})
-system_get_log_config()
+system_log_config()
+system_log_config(config_data={"level": "DEBUG"})
+system_log_config()
 # Expected: log level changed to DEBUG
 
 # Revert log config
-system_set_log_config(config_data={"level": "INFO"})
+system_log_config(config_data={"level": "INFO"})
 # Expected: log level back to INFO
 
 # System cleanup (remove old data)
@@ -1008,7 +997,7 @@ notifications_get(notification_id=<id>)
 # Expected: returns notification details (message, severity, timestamp)
 
 # Dismiss all notifications (marks as read, does not delete)
-notifications_dismiss()
+notifications_manage(action="dismiss")
 notifications_get_counts()
 # Expected: unread count drops to 0
 
@@ -1018,7 +1007,7 @@ notifications_list()
 # Expected: deleted notification no longer in list
 
 # Clean up all notifications
-notifications_cleanup()
+notifications_manage(action="cleanup")
 notifications_list()
 # Expected: notification list is empty (or only system-generated ones remain)
 ```
@@ -1152,8 +1141,8 @@ licensing_list_licenses()
 **Precondition:** No important data on the controller.
 
 ```
-system_get_disk_usage()
-system_list_disk_consumers()
+system_disk_usage()
+system_disk_usage(detail=True)
 
 # Clean up each target
 system_cleanup(target="test_results")
@@ -1161,7 +1150,7 @@ system_cleanup(target="configs")
 system_cleanup(target="captures")
 system_cleanup(target="diagnostics")
 
-system_get_disk_usage()
+system_disk_usage()
 # Expected: disk usage decreased after cleanup
 ```
 
@@ -1199,25 +1188,12 @@ system_get_disk_usage()
 | | sessions_set_network_ip_range | S1-10, S13 |
 | | sessions_disable_automatic_network | S1-10, S13 |
 | | sessions_set_objective_and_timeline | S1, S4-7, S10 |
-| Resources (19) | resources_list_apps | B1 |
-| | resources_get_app | B1 |
-| | resources_list_app_types | B1 |
+| Resources (6) | resources_list_apps | B1 |
 | | resources_list_attacks | B1 |
-| | resources_get_attack | B1 |
-| | resources_list_attack_categories | B1 |
-| | resources_list_auth_profiles | B1 |
-| | resources_list_captures | B1, B1b |
-| | resources_get_capture | B1b |
-| | resources_delete_capture | B1b |
-| | resources_list_tls_certs | B1, B1b |
-| | resources_get_tls_cert | B1b |
-| | resources_delete_tls_cert | B1b |
-| | resources_list_custom_fuzzing | B1 |
-| | resources_list_payloads | B1 |
-| | resources_list_pcaps | B1 |
-| | resources_list_http_profiles | B1 |
-| | resources_search_apps | B1 |
-| | resources_search_attacks | B1 |
+| | resources_browse | B1 (all 9 types) |
+| | resources_get | B1, B1b |
+| | resources_delete | B1b |
+| | resources_search | B1 |
 | Licensing (17) | licensing_list_licenses | B4, C3 |
 | | licensing_get_license | B4 |
 | | licensing_activate | C3 |
@@ -1256,22 +1232,18 @@ system_get_disk_usage()
 | | controllers_reboot_port | C2 |
 | | controllers_set_link_state | B6b |
 | | controllers_set_aggregation | B6b |
-| Configs (8) | configs_list | B3, B3b |
+| Configs (7) | configs_list | B3, B3b |
 | | configs_get | B3 |
 | | configs_delete | B3, B3b, S14 |
 | | configs_update | B3 |
-| | configs_import | S14, B3b |
-| | configs_import_all | S14, B3b |
+| | configs_import | S14, B3b (import_all=True for bulk) |
 | | configs_export_all | B3, B3b, S14 |
 | | configs_categories | S14, B3b |
-| System (8) | system_get_time | B5 |
-| | system_get_disk_usage | B5, C4 |
-| | system_list_disk_consumers | B5, C4 |
+| System (5) | system_get_time | B5 |
+| | system_disk_usage | B5, C4 (detail=True for consumers) |
 | | system_cleanup | B5b, C4 |
-| | system_check_eula | B5, B5b |
-| | system_accept_eula | B5b |
-| | system_get_log_config | B5, B5b |
-| | system_set_log_config | B5b |
+| | system_eula | B5, B5b (action=check/accept) |
+| | system_log_config | B5, B5b (omit config_data to get) |
 | Results (8) | results_list | B7 |
 | | results_get | B7 |
 | | results_delete | B7, S15 |
@@ -1280,18 +1252,15 @@ system_get_disk_usage()
 | | results_download_config | S15, B7 |
 | | results_generate_report | S15, B7 |
 | | results_tags | S15, B7 |
-| Test ops (7) | test_start | S1-10, S13, S15 |
+| Test ops (4) | test_start | S1-10, S13, S15 |
 | | test_stop | S1-10, S13 |
 | | test_abort | S13 |
 | | test_calibrate | S13 |
-| | test_init | S13 |
-| | test_end | S13 |
-| | test_prepare | S13 |
-| Notifications (6) | notifications_list | B5, B10 |
+| Notifications (5) | notifications_list | B5, B10 |
 | | notifications_get | B10 |
 | | notifications_delete | B10 |
-| | notifications_dismiss | B10 |
-| | notifications_cleanup | B10 |
+| | notifications_manage (dismiss) | B10 |
+| | notifications_manage (cleanup) | B10 |
 | | notifications_get_counts | B5, B10 |
 | Brokers (5) | brokers_list | B6 |
 | | brokers_create | B6c |

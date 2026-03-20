@@ -741,7 +741,10 @@ def register(mcp, client: CyPerfClientManager):
 
     @mcp.tool()
     def sessions_get_config(session_id: str) -> dict:
-        """[Sessions] Get the configuration of a session.
+        """[Sessions] Get the high-level configuration of a session (name, template, data model version).
+
+        Does NOT include transport/TLS/cipher details. To find configs with specific
+        TLS or PQC settings (Kyber, ML-KEM), use configs_list with search_val (e.g. 'kyber', 'TLS').
 
         Args:
             session_id: The session identifier

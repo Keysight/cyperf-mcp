@@ -1,82 +1,101 @@
-# Future Tool Reductions (Medium Risk)
+# Future Tool Reductions
 
-These are deferred consolidation opportunities that could reduce the tool count
-further (~18 tools, from 131 → ~113) but carry medium risk due to complex
-conditional parameter schemas that may confuse AI assistants.
+Current tool count: **118** (down from 139 via Phase 1 consolidation + 3 removed)
 
----
+## Completed Consolidations
 
-## Approach 8: Consolidate resource browse tools (~8 tools saved)
-
-Merge simple `list_X(take, skip)` resource tools into a single dispatcher:
-
-**Tools to merge:**
-- `resources_list_app_types`
-- `resources_list_attack_categories`
-- `resources_list_auth_profiles`
-- `resources_list_captures`
-- `resources_list_tls_certs`
-- `resources_list_custom_fuzzing`
-- `resources_list_payloads`
-- `resources_list_pcaps`
-- `resources_list_http_profiles`
-
-**Merged into:** `resources_browse(resource_type: str, take=None, skip=None)`
-
-Where `resource_type` is one of: `app_types`, `attack_categories`, `auth_profiles`,
-`captures`, `tls_certs`, `custom_fuzzing`, `payloads`, `pcaps`, `http_profiles`.
-
-Keep `resources_list_apps` and `resources_list_attacks` separate (they have search params).
-
-**Risk:** Dispatch logic; parameter schema becomes less discoverable for the AI.
+| Phase | What | Tools Saved | Status |
+|-------|------|-------------|--------|
+| 1A | Resource browse (9→1) → `resources_browse` | 8 | Done |
+| 1B | Resource get-by-ID (4→1) → `resources_get` | 3 | Done |
+| 1C | Resource delete (2→1) → `resources_delete` | 1 | Done |
+| 1D | Resource search (2→1) → `resources_search` | 1 | Done |
+| 1E | Notification dismiss/cleanup → `notifications_manage` | 1 | Done |
+| 1F | EULA check/accept → `system_eula` | 1 | Done |
+| 1G | Log config get/set → `system_log_config` | 1 | Done |
+| 1H | Disk usage overview/consumers → `system_disk_usage` | 1 | Done |
+| 1I | Config import/import_all → `configs_import(import_all=)` | 1 | Done |
+| — | Removed `test_init`, `test_prepare`, `test_end` (unnecessary for MCP) | 3 | Done |
+| **Total saved** | | **21** | |
 
 ---
 
-## Approach 9: Merge profile management tools (~6 tools saved)
+## Pending Reductions (Phase 2: Medium-Low Risk) — ~10 tools saved
 
-**Traffic profile apps (4 → 1):**
-- `sessions_add_applications`
-- `sessions_get_applications`
-- `sessions_remove_application`
-- `sessions_delete_traffic_profile`
+### 2A. Broker CRUD (5→2) — 3 saved
 
-→ `sessions_traffic_profile(session_id, action="list"|"add"|"remove"|"delete", ...)`
+Keep `brokers_list`, merge rest into `brokers_manage(action, broker_id, broker_data)`.
 
-**Attack profile (4 → 1):**
-- `sessions_add_attacks`
-- `sessions_get_attacks`
-- `sessions_remove_attack`
-- `sessions_delete_attack_profile`
+| Action | Required params |
+|--------|----------------|
+| `create` | `broker_data` |
+| `get` | `broker_id` |
+| `update` | `broker_id`, `broker_data` |
+| `delete` | `broker_id` |
 
-→ `sessions_attack_profile(session_id, action="list"|"add"|"remove"|"delete", ...)`
+**Risk:** Low — classic CRUD dispatch, identical to `resources_get`/`resources_delete` pattern.
 
-**Risk:** Complex conditional parameter schema — `app_names` only for "add",
-`app_id` only for "remove", `traffic_profile_id` always needed. AI may struggle
-with the right parameter combination per action.
+### 2B. Licensing server CRUD (5→2) — 3 saved
+
+Keep `licensing_list_servers`, merge rest into `licensing_manage_server(action, server_id, server_data)`.
+
+Same pattern as 2A.
+
+### 2C. License activate/deactivate (2→1) — 1 saved
+
+Merge into `licensing_activation(action, activation_code)` where action is `activate` or `deactivate`.
+
+### 2D. License code info (2→1) — 1 saved
+
+Merge `licensing_get_activation_info` + `licensing_get_entitlement_info` into `licensing_get_code_info(code_type, code)` where code_type is `activation` or `entitlement`.
+
+### 2E. Stats plugins (3→1) — 2 saved
+
+Merge `stats_list_plugins`, `stats_create_plugin`, `stats_delete_plugin` into `stats_plugins(action, plugin_id, plugin_data, take, skip)`.
+
+**Phase 2 total: 118 → ~108**
 
 ---
 
-## Approach 10: Merge licensing server CRUD (~4 tools saved)
+## Pending Reductions (Phase 3: Medium Risk) — ~7 tools saved
 
-**Tools to merge:**
-- `licensing_list_servers`
-- `licensing_add_server`
-- `licensing_get_server`
-- `licensing_update_server`
-- `licensing_delete_server`
+### 3A. Traffic profile CRUD (4→1) — 3 saved
 
-→ `licensing_server(action="list"|"get"|"add"|"update"|"delete", server_id=None, ...)`
+Merge `sessions_add_applications`, `sessions_get_applications`, `sessions_remove_application`, `sessions_delete_traffic_profile` into `sessions_traffic_profile(session_id, action, ...)`.
 
-**Risk:** Same conditional parameter complexity — `server_id` required for
-get/update/delete but not list/add; server data only for add/update.
+**Risk:** Complex conditional params — `app_names` only for `add`, `app_id` only for `remove`. These tools are on the critical test setup path.
+
+### 3B. Attack profile CRUD (4→1) — 3 saved
+
+Mirror of 3A for attacks.
+
+### 3D. Migration export/import (2→1) — 1 saved
+
+Merge into `migration(action, export_data)`.
+
+**Phase 3 total: ~108 → ~101**
+
+---
+
+## Not Recommended for Consolidation
+
+| Tools | Reason |
+|-------|--------|
+| `test_start/stop/abort/calibrate` | Safety-critical — must stay distinct |
+| `sessions_list/create/get/delete/update` | Core CRUD, heavily used, distinct signatures |
+| `sessions_get_app_actions/set_app_action_param/remove_app_action` | Deeply nested DynamicModel navigation, too complex to merge |
+| `sessions_get/rename/set_network_segments + disable_automatic_network` | Critical-path for test setup |
+| `agents_*` (11 tools) | Each has unique params |
+| `controllers_*` (10 tools) | Hardware-only, already consolidated |
+| `results_*` (8 tools) | Already consolidated, each distinct |
 
 ---
 
 ## Summary
 
-| Approach | Savings | Current tools affected |
-|----------|---------|----------------------|
-| 8. Consolidate resource browse | ~8 | resources.py |
-| 9. Merge profile management | ~6 | sessions.py |
-| 10. Merge licensing server CRUD | ~4 | licensing.py |
-| **Total** | **~18** | **131 → ~113** |
+| Phase | Savings | Target |
+|-------|---------|--------|
+| Phase 1 (done) | 21 | 139 → 118 |
+| Phase 2 (pending) | ~10 | 118 → ~108 |
+| Phase 3 (pending) | ~7 | ~108 → ~101 |
+| **Total potential** | **~38** | **139 → ~101** |

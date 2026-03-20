@@ -112,32 +112,6 @@ class TestOpsTools:
         except Exception as e:
             return handle_exception(e)
 
-    def init(self, session_id: str):
-        try:
-            result = self.sessions_api.start_session_test_init(session_id)
-            return await_and_serialize(result)
-        except cyperf.ApiException as e:
-            return handle_api_error(e)
-        except Exception as e:
-            return handle_exception(e)
-
-    def end(self, session_id: str):
-        try:
-            result = self.sessions_api.start_session_test_end(session_id)
-            return await_and_serialize(result)
-        except cyperf.ApiException as e:
-            return handle_api_error(e)
-        except Exception as e:
-            return handle_exception(e)
-
-    def prepare(self, session_id: str):
-        try:
-            result = self.sessions_api.start_session_prepare_test(session_id)
-            return await_and_serialize(result)
-        except cyperf.ApiException as e:
-            return handle_api_error(e)
-        except Exception as e:
-            return handle_exception(e)
 
 
 def register(mcp, client: CyPerfClientManager):
@@ -183,29 +157,3 @@ def register(mcp, client: CyPerfClientManager):
             return tools.calibrate_stop(session_id)
         return tools.calibrate_start(session_id)
 
-    @mcp.tool()
-    def test_init(session_id: str) -> dict:
-        """[Test Operations] Initialize a test (allocate resources, prepare agents).
-
-        Args:
-            session_id: The session identifier
-        """
-        return tools.init(session_id)
-
-    @mcp.tool()
-    def test_end(session_id: str) -> dict:
-        """[Test Operations] End a test and release resources.
-
-        Args:
-            session_id: The session identifier
-        """
-        return tools.end(session_id)
-
-    @mcp.tool()
-    def test_prepare(session_id: str) -> dict:
-        """[Test Operations] Prepare a test (pre-flight validation and setup).
-
-        Args:
-            session_id: The session identifier
-        """
-        return tools.prepare(session_id)

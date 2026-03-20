@@ -149,6 +149,10 @@ def register(mcp, client: CyPerfClientManager):
                      filter_mode: str = None, sort: str = None) -> dict:
         """[Configurations] List available CyPerf configurations with optional filtering and search.
 
+        Includes pre-built system configs for TLS, PQC/post-quantum (Kyber, ML-KEM),
+        VPN, app mixes, attacks, and more. Search by name to find specific configs
+        (e.g. search_val='kyber' for PQC configs, 'TLS' for TLS configs).
+
         Args:
             take: Number of results to return
             skip: Number of results to skip
@@ -190,22 +194,16 @@ def register(mcp, client: CyPerfClientManager):
         return tools.update(config_id, properties)
 
     @mcp.tool()
-    def configs_import(file_path: str) -> dict:
-        """[Configurations] Import a configuration from a local file.
+    def configs_import(file_path: str, import_all: bool = False) -> dict:
+        """[Configurations] Import configuration(s) from a local file.
 
         Args:
             file_path: Path to the configuration file to import
+            import_all: False to import a single config (default), True to import all configs from the file
         """
+        if import_all:
+            return tools.import_all(file_path)
         return tools.import_config(file_path)
-
-    @mcp.tool()
-    def configs_import_all(file_path: str) -> dict:
-        """[Configurations] Import all configurations from a file.
-
-        Args:
-            file_path: Path to the file containing configurations
-        """
-        return tools.import_all(file_path)
 
     @mcp.tool()
     def configs_export_all(config_ids: list[str] = None) -> dict:

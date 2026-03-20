@@ -131,19 +131,19 @@ def register(mcp, client: CyPerfClientManager):
         return tools.get_time()
 
     @mcp.tool()
-    def system_get_disk_usage() -> dict:
-        """[System] Get disk usage overview for the CyPerf controller."""
-        return tools.get_disk_usage()
+    def system_disk_usage(detail: bool = False, take: int = None, skip: int = None) -> dict:
+        """[System] Get disk usage for the CyPerf controller.
 
-    @mcp.tool()
-    def system_list_disk_consumers(take: int = None, skip: int = None) -> dict:
-        """[System] List disk usage consumers (what's using disk space).
+        Returns an overview by default. Set detail=True to list individual disk consumers.
 
         Args:
-            take: Number of results to return
-            skip: Number of results to skip
+            detail: False for overview (default), True to list disk consumers
+            take: Number of consumer results to return (only when detail=True)
+            skip: Number of consumer results to skip (only when detail=True)
         """
-        return tools.list_disk_consumers(take, skip)
+        if detail:
+            return tools.list_disk_consumers(take, skip)
+        return tools.get_disk_usage()
 
     @mcp.tool()
     def system_cleanup(target: str) -> dict:
@@ -161,25 +161,28 @@ def register(mcp, client: CyPerfClientManager):
         return {"error": True, "message": f"Unknown cleanup target: {target}. Use 'diagnostics', 'logs', or 'results'."}
 
     @mcp.tool()
-    def system_check_eula() -> dict:
-        """[System] Check EULA acceptance status."""
-        return tools.check_eula()
-
-    @mcp.tool()
-    def system_accept_eula() -> dict:
-        """[System] Accept the End User License Agreement."""
-        return tools.accept_eula()
-
-    @mcp.tool()
-    def system_get_log_config() -> dict:
-        """[System] Get the current logging configuration."""
-        return tools.get_log_config()
-
-    @mcp.tool()
-    def system_set_log_config(config_data: dict) -> dict:
-        """[System] Set logging configuration.
+    def system_eula(action: str = "check") -> dict:
+        """[System] Check or accept the End User License Agreement.
 
         Args:
-            config_data: Logging configuration (e.g. level, file settings)
+            action: 'check' to view EULA status (default), 'accept' to accept the EULA
         """
+        if action == "check":
+            return tools.check_eula()
+        elif action == "accept":
+            return tools.accept_eula()
+        return {"error": True, "message": f"Unknown action '{action}'. Use 'check' or 'accept'."}
+
+    @mcp.tool()
+    def system_log_config(config_data: dict = None) -> dict:
+        """[System] Get or set the logging configuration.
+
+        When called without config_data, returns the current logging config.
+        When called with config_data, updates the logging configuration.
+
+        Args:
+            config_data: Logging configuration to set (e.g. level, file settings). Omit to get current config.
+        """
+        if config_data is None:
+            return tools.get_log_config()
         return tools.set_log_config(config_data)

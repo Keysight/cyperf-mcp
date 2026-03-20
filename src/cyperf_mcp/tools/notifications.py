@@ -114,14 +114,17 @@ def register(mcp, client: CyPerfClientManager):
         return tools.delete(notification_id)
 
     @mcp.tool()
-    def notifications_dismiss() -> dict:
-        """[Notifications] Dismiss all notifications."""
-        return tools.dismiss()
+    def notifications_manage(action: str) -> dict:
+        """[Notifications] Manage notifications in bulk.
 
-    @mcp.tool()
-    def notifications_cleanup() -> dict:
-        """[Notifications] Clean up old notifications."""
-        return tools.cleanup()
+        Args:
+            action: One of: 'dismiss' (mark all as read), 'cleanup' (delete old notifications)
+        """
+        if action == "dismiss":
+            return tools.dismiss()
+        elif action == "cleanup":
+            return tools.cleanup()
+        return {"error": True, "message": f"Unknown action '{action}'. Use 'dismiss' or 'cleanup'."}
 
     @mcp.tool()
     def notifications_get_counts() -> dict:

@@ -457,7 +457,7 @@ sessions_delete(session_id)
 
 ### Scenario 13 — Test Lifecycle Control (start/abort/calibrate)
 
-**Purpose:** Exercises test lifecycle tools beyond simple start/stop. Covers: `test_start`, `test_abort`, `test_calibrate`.
+**Purpose:** Exercises test lifecycle tools beyond simple start/stop. Covers: `test_start`, `test_stop(force=True)`, `test_calibrate`.
 
 ```
 # Create session from a simple config
@@ -469,7 +469,7 @@ sessions_add_applications(session_id, app_names=["HTTP App"])
 test_start(session_id)
 # Let it run briefly (~15s)
 
-test_abort(session_id)
+test_stop(session_id, force=True)
 # Expected: test immediately terminates, session goes to STOPPED
 
 sessions_delete(session_id)
@@ -495,7 +495,7 @@ sessions_delete(session_id)
 **Expected:** Flow A: start→abort terminates test immediately. Flow B: calibration completes without error, subsequent test runs normally.
 
 **Notes:**
-- `test_abort` is destructive — use only when graceful `test_stop` is insufficient
+- `test_stop(force=True)` is destructive — use only when graceful `test_stop` is insufficient
 - `test_calibrate` is optional and adjusts agent-level settings before a run
 - `test_init`, `test_prepare`, and `test_end` were removed — `test_start` handles init+prepare automatically, and the controller auto-ends tests on stop/abort
 
@@ -1247,9 +1247,8 @@ system_disk_usage()
 | | results_download_config | S15, B7 |
 | | results_generate_report | S15, B7 |
 | | results_tags | S15, B7 |
-| Test ops (4) | test_start | S1-10, S13, S15 |
-| | test_stop | S1-10, S13 |
-| | test_abort | S13 |
+| Test ops (3) | test_start | S1-10, S13, S15 |
+| | test_stop | S1-10, S13 (force=True for abort) |
 | | test_calibrate | S13 |
 | Notifications (5) | notifications_list | B5, B10 |
 | | notifications_get | B10 |

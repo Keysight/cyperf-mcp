@@ -1,6 +1,6 @@
 # CyPerf MCP Server
 
-An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **108 tools** across 15 categories.
+An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **107 tools** across 15 categories.
 
 AI assistants connected via MCP can orchestrate CyPerf tests, manage agents, analyze results, and perform security testing — all through natural language.
 
@@ -122,7 +122,7 @@ src/cyperf_mcp/
     ├── configs.py         # Configuration management (7 tools)
     ├── system.py          # System utilities (5 tools)
     ├── notifications.py   # Notification management (5 tools)
-    ├── test_ops.py        # Test execution (4 tools)
+    ├── test_ops.py        # Test execution (3 tools)
     ├── diagnostics.py     # Diagnostics export/cleanup (3 tools)
     ├── certificates.py    # Certificate management (3 tools)
     ├── brokers.py         # Broker management (2 tools)
@@ -132,7 +132,7 @@ src/cyperf_mcp/
 
 The server wraps the [`cyperf`](https://pypi.org/project/cyperf/) Python SDK's API classes directly. Each tool module follows a class-based pattern where a `*Tools` class holds the API logic, and a `register()` function wires `@mcp.tool()` decorated functions to those methods. Session config manipulation uses the SDK's DynamicModel pattern for in-place updates.
 
-## Tool Catalog (108 tools)
+## Tool Catalog (107 tools)
 
 All tools use `category_action` naming. Parameters with `= None` are optional.
 
@@ -203,15 +203,14 @@ Manage saved test configurations (templates).
 | `configs_export_all` | Export configurations |
 | `configs_categories` | List configuration categories |
 
-### Test Operations — 4 tools
+### Test Operations — 3 tools
 
 Control test execution lifecycle.
 
 | Tool | Description |
 |---|---|
 | `test_start` | Start a test run (handles init+prepare automatically, polls until running) |
-| `test_stop` | Stop a running test gracefully |
-| `test_abort` | Abort a test run immediately |
+| `test_stop` | Stop a running test. Graceful by default (ramp-down); `force=True` for immediate abort |
 | `test_calibrate` | Start or stop test calibration |
 
 ### Results — 8 tools

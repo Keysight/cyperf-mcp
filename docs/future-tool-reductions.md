@@ -1,6 +1,6 @@
 # Future Tool Reductions
 
-Current tool count: **108** (down from 139 via Phase 1+2 consolidation + 3 removed)
+Current tool count: **107** (down from 139 via Phase 1+2 consolidation + 4 merged/removed)
 
 ## Completed Consolidations
 
@@ -16,12 +16,13 @@ Current tool count: **108** (down from 139 via Phase 1+2 consolidation + 3 remov
 | 1H | Disk usage overview/consumers → `system_disk_usage` | 1 | Done |
 | 1I | Config import/import_all → `configs_import(import_all=)` | 1 | Done |
 | — | Removed `test_init`, `test_prepare`, `test_end` (unnecessary for MCP) | 3 | Done |
+| — | Merged `test_abort` into `test_stop(force=True)` | 1 | Done |
 | 2A | Broker CRUD (5→2) → `brokers_manage` | 3 | Done |
 | 2B | Licensing server CRUD (5→2) → `licensing_manage_server` | 3 | Done |
 | 2C | License activate/deactivate → `licensing_activation` | 1 | Done |
 | 2D | License code info → `licensing_get_code_info` | 1 | Done |
 | 2E | Stats plugins (3→1) → `stats_plugins` | 2 | Done |
-| **Total saved** | | **31** | |
+| **Total saved** | | **32** | |
 
 ---
 
@@ -65,5 +66,6 @@ Merge into `migration(action, export_data)`.
 |-------|---------|--------|
 | Phase 1 (done) | 21 | 139 → 118 |
 | Phase 2 (done) | 10 | 118 → 108 |
-| Phase 3 (pending) | ~7 | 108 → ~101 |
-| **Total potential** | **~38** | **139 → ~101** |
+| Merge test_stop/abort | 1 | 108 → 107 |
+| Phase 3 (pending) | ~7 | 107 → ~100 |
+| **Total potential** | **~39** | **139 → ~100** |

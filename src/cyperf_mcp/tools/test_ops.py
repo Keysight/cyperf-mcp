@@ -128,22 +128,23 @@ def register(mcp, client: CyPerfClientManager):
         return tools.start(session_id)
 
     @mcp.tool()
-    def test_stop(session_id: str) -> dict:
-        """[Test Operations] Stop a running test gracefully.
+    def test_stop(session_id: str, force: bool = False) -> dict:
+        """[Test Operations] Stop a running test.
+
+        By default performs a graceful stop with ramp-down — use this for normal test
+        completion where you want traffic to wind down cleanly and final stats to be collected.
+
+        Set force=True for an immediate abort with no ramp-down — use this when the test
+        is stuck, unresponsive, or you need to halt traffic instantly (e.g., unexpected errors,
+        runaway load, or emergency shutdown).
 
         Args:
             session_id: The session identifier
+            force: False (default) for graceful stop with ramp-down, True for immediate abort
         """
+        if force:
+            return tools.abort(session_id)
         return tools.stop(session_id)
-
-    @mcp.tool()
-    def test_abort(session_id: str) -> dict:
-        """[Test Operations] Abort a test run immediately.
-
-        Args:
-            session_id: The session identifier
-        """
-        return tools.abort(session_id)
 
     @mcp.tool()
     def test_calibrate(session_id: str, action: str = "start") -> dict:

@@ -1,6 +1,6 @@
 # CyPerf MCP Server
 
-An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **139 fine-grained tools** across 15 categories.
+An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **108 tools** across 15 categories.
 
 AI assistants connected via MCP can orchestrate CyPerf tests, manage agents, analyze results, and perform security testing — all through natural language.
 
@@ -113,26 +113,26 @@ src/cyperf_mcp/
 ├── helpers.py             # Serialization, error handling, async polling
 └── tools/
     ├── __init__.py        # Tool registration aggregator
-    ├── agents.py          # Agent management (11 tools)
     ├── sessions.py        # Session & config management (28 tools)
-    ├── configs.py         # Configuration management (9 tools)
-    ├── test_ops.py        # Test execution (7 tools)
-    ├── results.py         # Results and reporting (8 tools)
-    ├── resources.py       # Apps, attacks, TLS, captures (19 tools)
+    ├── resources.py       # Apps, attacks, TLS, captures (6 tools)
+    ├── licensing.py       # License management (12 tools)
+    ├── agents.py          # Agent management (11 tools)
     ├── controllers.py     # Controller and port management (10 tools)
-    ├── brokers.py         # Broker management (5 tools)
-    ├── licensing.py       # License management (17 tools)
+    ├── results.py         # Results and reporting (8 tools)
+    ├── configs.py         # Configuration management (7 tools)
+    ├── system.py          # System utilities (5 tools)
+    ├── notifications.py   # Notification management (5 tools)
+    ├── test_ops.py        # Test execution (4 tools)
     ├── diagnostics.py     # Diagnostics export/cleanup (3 tools)
-    ├── notifications.py   # Notification management (6 tools)
-    ├── statistics.py      # Statistics plugins (4 tools)
     ├── certificates.py    # Certificate management (3 tools)
-    ├── system.py          # System utilities (8 tools)
+    ├── brokers.py         # Broker management (2 tools)
+    ├── statistics.py      # Statistics plugins (2 tools)
     └── migration.py       # Data migration (2 tools)
 ```
 
 The server wraps the [`cyperf`](https://pypi.org/project/cyperf/) Python SDK's API classes directly. Each tool module follows a class-based pattern where a `*Tools` class holds the API logic, and a `register()` function wires `@mcp.tool()` decorated functions to those methods. Session config manipulation uses the SDK's DynamicModel pattern for in-place updates.
 
-## Tool Catalog (139 tools)
+## Tool Catalog (108 tools)
 
 All tools use `category_action` naming. Parameters with `= None` are optional.
 
@@ -189,34 +189,30 @@ Manage CyPerf test agents (virtual or hardware appliances).
 | `agents_tags` | List agent tags |
 | `agents_export_files` | Export agent files (logs, configs) |
 
-### Configurations — 8 tools
+### Configurations — 7 tools
 
 Manage saved test configurations (templates).
 
 | Tool | Description |
 |---|---|
-| `configs_list` | List configurations with optional search/filter |
+| `configs_list` | List configurations with optional search/filter (includes PQC/Kyber/TLS configs) |
 | `configs_get` | Get configuration by ID |
 | `configs_delete` | Delete one or more configurations |
 | `configs_update` | Update configuration metadata |
-| `configs_import` | Import a configuration file |
-| `configs_import_all` | Import all configurations from file |
+| `configs_import` | Import configuration(s) from file (`import_all=True` for bulk) |
 | `configs_export_all` | Export configurations |
 | `configs_categories` | List configuration categories |
 
-### Test Operations — 7 tools
+### Test Operations — 4 tools
 
 Control test execution lifecycle.
 
 | Tool | Description |
 |---|---|
-| `test_start` | Start a test run (polls until running) |
+| `test_start` | Start a test run (handles init+prepare automatically, polls until running) |
 | `test_stop` | Stop a running test gracefully |
 | `test_abort` | Abort a test run immediately |
 | `test_calibrate` | Start or stop test calibration |
-| `test_init` | Initialize test (allocate resources) |
-| `test_end` | End test and release resources |
-| `test_prepare` | Prepare test (pre-flight validation) |
 
 ### Results — 8 tools
 
@@ -233,31 +229,18 @@ Access and export test results, statistics, and reports.
 | `results_generate_report` | Generate report (csv, pdf, or all) |
 | `results_tags` | List result tags |
 
-### Resources — 19 tools
+### Resources — 6 tools
 
 Browse and search application resources, attacks, TLS certificates, captures, and more.
 
 | Tool | Description |
 |---|---|
 | `resources_list_apps` | List applications with optional search/filter |
-| `resources_get_app` | Get application details |
-| `resources_list_app_types` | List application types |
 | `resources_list_attacks` | List attacks/strikes with optional search/filter |
-| `resources_get_attack` | Get attack details |
-| `resources_list_attack_categories` | List attack categories |
-| `resources_list_auth_profiles` | List authentication profiles |
-| `resources_list_captures` | List packet captures |
-| `resources_get_capture` | Get capture details |
-| `resources_delete_capture` | Delete a packet capture |
-| `resources_list_tls_certs` | List TLS certificates |
-| `resources_get_tls_cert` | Get TLS certificate details |
-| `resources_delete_tls_cert` | Delete a TLS certificate |
-| `resources_list_custom_fuzzing` | List custom fuzzing scripts |
-| `resources_list_payloads` | List payloads |
-| `resources_list_pcaps` | List PCAP files |
-| `resources_list_http_profiles` | List HTTP profiles |
-| `resources_search_apps` | Search apps by substring (name or description) |
-| `resources_search_attacks` | Search attacks by substring (name or description) |
+| `resources_browse` | Browse resource catalogs by type: `app_types`, `attack_categories`, `auth_profiles`, `captures`, `tls_certs`, `custom_fuzzing`, `payloads`, `pcaps`, `http_profiles` |
+| `resources_get` | Get resource details by type (`app`, `attack`, `capture`, `tls_cert`) and ID |
+| `resources_delete` | Delete resource by type (`capture`, `tls_cert`, `tls_key`) and ID |
+| `resources_search` | Search resources by type (`apps`, `attacks`) with substring match on name/description |
 
 ### Controllers — 10 tools
 
@@ -276,19 +259,16 @@ Manage CyPerf controllers, compute nodes, and ports.
 | `controllers_set_link_state` | Set port link state (up/down) |
 | `controllers_set_aggregation` | Set node aggregation mode |
 
-### Brokers — 5 tools
+### Brokers — 2 tools
 
 Manage network brokers.
 
 | Tool | Description |
 |---|---|
 | `brokers_list` | List brokers |
-| `brokers_create` | Create a broker |
-| `brokers_get` | Get broker details |
-| `brokers_update` | Update broker properties |
-| `brokers_delete` | Delete a broker |
+| `brokers_manage` | Create, get, update, or delete a broker (`action`: create/get/update/delete) |
 
-### Licensing — 17 tools
+### Licensing — 12 tools
 
 Manage licenses and license servers.
 
@@ -296,21 +276,16 @@ Manage licenses and license servers.
 |---|---|
 | `licensing_list_licenses` | List all installed licenses |
 | `licensing_get_license` | Get license details |
-| `licensing_activate` | Activate a license |
-| `licensing_deactivate` | Deactivate a license |
+| `licensing_activation` | Activate or deactivate a license (`action`: activate/deactivate) |
 | `licensing_sync` | Synchronize licenses |
 | `licensing_get_hostid` | Get host ID |
 | `licensing_reserve_feature` | Reserve a license feature |
 | `licensing_remove_reservation` | Remove a reservation |
 | `licensing_test_connectivity` | Test backend connectivity |
-| `licensing_get_activation_info` | Get activation code info |
-| `licensing_get_entitlement_info` | Get entitlement code info |
+| `licensing_get_code_info` | Get activation or entitlement code info (`code_type`: activation/entitlement) |
 | `licensing_get_feature_stats` | Get feature statistics |
 | `licensing_list_servers` | List license servers |
-| `licensing_add_server` | Add a license server |
-| `licensing_get_server` | Get license server details |
-| `licensing_update_server` | Update license server |
-| `licensing_delete_server` | Delete license server |
+| `licensing_manage_server` | Add, get, update, or delete a license server (`action`: add/get/update/delete) |
 
 ### Diagnostics — 3 tools
 
@@ -322,7 +297,7 @@ Export and manage diagnostic data.
 | `diagnostics_export` | Export diagnostics |
 | `diagnostics_delete` | Delete diagnostics data |
 
-### Notifications — 6 tools
+### Notifications — 5 tools
 
 Manage system notifications.
 
@@ -331,19 +306,16 @@ Manage system notifications.
 | `notifications_list` | List notifications |
 | `notifications_get` | Get notification details |
 | `notifications_delete` | Delete a notification |
-| `notifications_dismiss` | Dismiss all notifications |
-| `notifications_cleanup` | Clean up old notifications |
+| `notifications_manage` | Dismiss or clean up notifications (`action`: dismiss/cleanup) |
 | `notifications_get_counts` | Get notification counts |
 
-### Statistics — 4 tools
+### Statistics — 2 tools
 
 Manage statistics plugins for external ingestion.
 
 | Tool | Description |
 |---|---|
-| `stats_list_plugins` | List stats plugins |
-| `stats_create_plugin` | Create a stats plugin |
-| `stats_delete_plugin` | Delete a stats plugin |
+| `stats_plugins` | List, create, or delete stats plugins (`action`: list/create/delete) |
 | `stats_ingest` | Ingest external statistics |
 
 ### Certificates — 3 tools
@@ -356,20 +328,17 @@ Manage controller certificates.
 | `certs_generate` | Generate a certificate |
 | `certs_upload` | Upload a certificate |
 
-### System — 8 tools
+### System — 5 tools
 
 System utilities: time, disk, EULA, logging.
 
 | Tool | Description |
 |---|---|
 | `system_get_time` | Get server time |
-| `system_get_disk_usage` | Get disk usage overview |
-| `system_list_disk_consumers` | List disk consumers |
+| `system_disk_usage` | Get disk usage overview or detailed consumers (`detail=True`) |
 | `system_cleanup` | Clean up disk space (diagnostics, logs, or results) |
-| `system_check_eula` | Check EULA acceptance |
-| `system_accept_eula` | Accept EULA |
-| `system_get_log_config` | Get logging config |
-| `system_set_log_config` | Set logging config |
+| `system_eula` | Check or accept EULA (`action`: check/accept) |
+| `system_log_config` | Get or set logging config (omit `config_data` to get, provide to set) |
 
 ### Migration — 2 tools
 

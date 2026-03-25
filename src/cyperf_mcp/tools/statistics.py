@@ -89,32 +89,28 @@ def register(mcp, client: CyPerfClientManager):
     tools = StatisticsTools(client)
 
     @mcp.tool()
-    def stats_list_plugins(take: int = None, skip: int = None) -> dict:
-        """[Statistics] List stats plugins.
+    def stats_plugins(action: str = "list", plugin_id: str = None,
+                      plugin_data: dict = None, take: int = None, skip: int = None) -> dict:
+        """[Statistics] List, create, or delete stats plugins for external statistics ingestion.
 
         Args:
-            take: Number of results to return
-            skip: Number of results to skip
+            action: 'list' (default), 'create', or 'delete'
+            plugin_id: The plugin identifier (required for delete)
+            plugin_data: Plugin configuration dict (required for create)
+            take: Number of results to return (list only)
+            skip: Number of results to skip (list only)
         """
-        return tools.list_plugins(take, skip)
-
-    @mcp.tool()
-    def stats_create_plugin(plugin_data: dict) -> dict:
-        """[Statistics] Create a stats plugin for external statistics ingestion.
-
-        Args:
-            plugin_data: Plugin configuration (e.g. name, type, endpoint)
-        """
-        return tools.create_plugin(plugin_data)
-
-    @mcp.tool()
-    def stats_delete_plugin(plugin_id: str) -> dict:
-        """[Statistics] Delete a stats plugin.
-
-        Args:
-            plugin_id: The plugin identifier to delete
-        """
-        return tools.delete_plugin(plugin_id)
+        if action == "list":
+            return tools.list_plugins(take, skip)
+        elif action == "create":
+            if not plugin_data:
+                return {"error": True, "message": "plugin_data is required for create"}
+            return tools.create_plugin(plugin_data)
+        elif action == "delete":
+            if not plugin_id:
+                return {"error": True, "message": "plugin_id is required for delete"}
+            return tools.delete_plugin(plugin_id)
+        return {"error": True, "message": f"Unknown action '{action}'. Use 'list', 'create', or 'delete'."}
 
     @mcp.tool()
     def stats_ingest(operation_data: dict) -> dict:

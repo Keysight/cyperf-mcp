@@ -112,7 +112,7 @@ sessions_set_objective_and_timeline(session_id,
     duration=120, ramp_up=30, ramp_down=30)
 
 # Add license server
-licensing_add_server(host="3.142.185.122",
+licensing_manage_server(action="add",host="3.142.185.122",
     username="admin", password="CyPerf&Keysight#1")
 
 # Save, run, monitor, stop, clean up
@@ -724,28 +724,28 @@ configs_delete(config_ids=[<imported_ids>])
 
 ```
 licensing_list_servers()
-licensing_get_server(server_id=<id>)
+licensing_manage_server(action="get",server_id=<id>)
 licensing_test_connectivity(server_id=<id>)
 licensing_sync(server_id=<id>)
 licensing_list_licenses()
 licensing_get_license(license_id=<id>)
 licensing_get_hostid()
 licensing_get_feature_stats()
-licensing_get_activation_info()
-licensing_get_entitlement_info()
+licensing_get_code_info(code_type="activation",)
+licensing_get_code_info(code_type="entitlement",)
 ```
 
 ### B4b — License server CRUD and feature reservation
 
 ```
 # Add a new license server
-licensing_add_server(host="3.142.185.122",
+licensing_manage_server(action="add",host="3.142.185.122",
     username="admin", password="CyPerf&Keysight#1")
 # Expected: server added, connection_status eventually "CONNECTED"
 
 # Update server properties
-licensing_update_server(server_id=<id>, properties={"description": "MCP test server"})
-licensing_get_server(server_id=<id>)
+licensing_manage_server(action="update",server_id=<id>, properties={"description": "MCP test server"})
+licensing_manage_server(action="get",server_id=<id>)
 # Expected: description updated
 
 # Test connectivity
@@ -757,15 +757,15 @@ licensing_sync(server_id=<id>)
 # Expected: license list refreshed
 
 # Delete server (only if it was added by this test)
-licensing_delete_server(server_id=<id>)
+licensing_manage_server(action="delete",server_id=<id>)
 licensing_list_servers()
 # Expected: server removed from list
 
 # --- License activation/deactivation ---
 # NOTE: Requires valid activation/entitlement codes
-# licensing_activate(activation_code="<valid_code>")
+# licensing_activation(action="activate",activation_code="<valid_code>")
 # Expected: license activated
-# licensing_deactivate(activation_code="<valid_code>")
+# licensing_activation(action="deactivate",activation_code="<valid_code>")
 # Expected: license deactivated
 
 # --- Feature reservation ---
@@ -776,8 +776,8 @@ licensing_list_licenses()
 # Expected: reservation released
 
 # Get activation and entitlement info (read-only, always safe)
-licensing_get_activation_info()
-licensing_get_entitlement_info()
+licensing_get_code_info(code_type="activation",)
+licensing_get_code_info(code_type="entitlement",)
 licensing_get_feature_stats()
 licensing_get_hostid()
 ```
@@ -785,7 +785,7 @@ licensing_get_hostid()
 **Expected:** Server CRUD lifecycle works. Activation/deactivation require valid codes (commented out for safety). Feature reservation requires an active license.
 
 **Notes:**
-- `licensing_activate` / `licensing_deactivate` require real activation codes — do not test with dummy values
+- `licensing_activation` requires real activation codes — do not test with dummy values
 - `licensing_reserve_feature` / `licensing_remove_reservation` require an active license with available features
 - `licensing_delete_server` is safe if the server was added during this test session
 
@@ -867,7 +867,7 @@ controllers_get(controller_id=<id>)
 controllers_nodes(controller_id=<id>)
 controllers_ports(controller_id=<id>)
 brokers_list()
-brokers_get(broker_id=<id>)
+brokers_manage(action="get",broker_id=<id>)
 ```
 
 ### B6b — Controller port and node operations
@@ -923,20 +923,20 @@ controllers_clear_ports(controller_id=<id>)
 
 ```
 # Create a new broker
-brokers_create(broker_data={"name": "MCP Test Broker", "host": "10.0.0.200"})
+brokers_manage(action="create",broker_data={"name": "MCP Test Broker", "host": "10.0.0.200"})
 # Expected: broker created, returns broker ID
 
 # Get the new broker
-brokers_get(broker_id=<new_id>)
+brokers_manage(action="get",broker_id=<new_id>)
 # Expected: returns broker details
 
 # Update broker properties
-brokers_update(broker_id=<new_id>, properties={"name": "MCP Test Broker Updated"})
-brokers_get(broker_id=<new_id>)
+brokers_manage(action="update",broker_id=<new_id>, properties={"name": "MCP Test Broker Updated"})
+brokers_manage(action="get",broker_id=<new_id>)
 # Expected: name updated
 
 # Delete the test broker
-brokers_delete(broker_id=<new_id>)
+brokers_manage(action="delete",broker_id=<new_id>)
 brokers_list()
 # Expected: test broker removed from list
 ```
@@ -1020,11 +1020,11 @@ notifications_list()
 
 ```
 # List existing stats plugins
-stats_list_plugins()
+stats_plugins(action="list")
 # Expected: list of plugin objects (may be empty)
 
 # Create a new stats plugin
-stats_create_plugin(plugin_data={
+stats_plugins(action="create",plugin_data={
     "name": "MCP Test Plugin",
     "type": "webhook",
     "config": {"url": "https://httpbin.org/post"}
@@ -1032,7 +1032,7 @@ stats_create_plugin(plugin_data={
 # Expected: plugin created, returns plugin ID
 
 # Verify plugin appears in list
-stats_list_plugins()
+stats_plugins(action="list")
 # Expected: MCP Test Plugin in the list
 
 # Ingest stats data into the plugin (requires an active test result)
@@ -1043,8 +1043,8 @@ stats_ingest(operation_data={
 # Expected: stats data sent to the plugin endpoint
 
 # Delete the test plugin
-stats_delete_plugin(plugin_id=<id>)
-stats_list_plugins()
+stats_plugins(action="delete",plugin_id=<id>)
+stats_plugins(action="list")
 # Expected: plugin removed from list
 ```
 
@@ -1113,10 +1113,10 @@ controllers_nodes(controller_id=<id>, node_id=<node_id>)
 
 ```
 licensing_get_hostid()
-licensing_get_activation_info(activation_code="<valid_code>")
+licensing_get_code_info(code_type="activation",activation_code="<valid_code>")
 
 # Activate
-licensing_activate(activation_code="<valid_code>")
+licensing_activation(action="activate",activation_code="<valid_code>")
 licensing_list_licenses()
 # Expected: new license appears
 
@@ -1131,7 +1131,7 @@ licensing_get_feature_stats()
 # Expected: reservation released
 
 # Deactivate
-licensing_deactivate(activation_code="<valid_code>")
+licensing_activation(action="deactivate",activation_code="<valid_code>")
 licensing_list_licenses()
 # Expected: license removed
 ```
@@ -1196,21 +1196,16 @@ system_disk_usage()
 | | resources_search | B1 |
 | Licensing (17) | licensing_list_licenses | B4, C3 |
 | | licensing_get_license | B4 |
-| | licensing_activate | C3 |
-| | licensing_deactivate | C3 |
+| | licensing_activation (activate/deactivate) | C3 |
 | | licensing_sync | B4, B4b |
 | | licensing_get_hostid | B4, C3 |
 | | licensing_reserve_feature | C3 |
 | | licensing_remove_reservation | C3 |
 | | licensing_test_connectivity | B4, B4b |
-| | licensing_get_activation_info | B4, B4b, C3 |
-| | licensing_get_entitlement_info | B4, B4b |
+| | licensing_get_code_info (activation/entitlement) | B4, B4b, C3 |
 | | licensing_get_feature_stats | B4, B4b, C3 |
 | | licensing_list_servers | B4, B4b |
-| | licensing_add_server | S1, B4b |
-| | licensing_get_server | B4, B4b |
-| | licensing_update_server | B4b |
-| | licensing_delete_server | B4b |
+| | licensing_manage_server (add/get/update/delete) | S1, B4, B4b |
 | Agents (11) | agents_list | B2 |
 | | agents_get | B2, B2b |
 | | agents_delete | B2b, C1 |
@@ -1263,13 +1258,8 @@ system_disk_usage()
 | | notifications_manage (cleanup) | B10 |
 | | notifications_get_counts | B5, B10 |
 | Brokers (5) | brokers_list | B6 |
-| | brokers_create | B6c |
-| | brokers_get | B6, B6c |
-| | brokers_update | B6c |
-| | brokers_delete | B6c |
-| Statistics (4) | stats_list_plugins | B11 |
-| | stats_create_plugin | B11 |
-| | stats_delete_plugin | B11 |
+| | brokers_manage (create/get/update/delete) | B6, B6c |
+| Statistics (2) | stats_plugins (list/create/delete) | B11 |
 | | stats_ingest | B11 |
 | Diagnostics (3) | diagnostics_list_components | B5, B5c |
 | | diagnostics_export | B5c |

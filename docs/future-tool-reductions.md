@@ -1,6 +1,6 @@
 # Future Tool Reductions
 
-Current tool count: **118** (down from 139 via Phase 1 consolidation + 3 removed)
+Current tool count: **108** (down from 139 via Phase 1+2 consolidation + 3 removed)
 
 ## Completed Consolidations
 
@@ -16,44 +16,12 @@ Current tool count: **118** (down from 139 via Phase 1 consolidation + 3 removed
 | 1H | Disk usage overview/consumers → `system_disk_usage` | 1 | Done |
 | 1I | Config import/import_all → `configs_import(import_all=)` | 1 | Done |
 | — | Removed `test_init`, `test_prepare`, `test_end` (unnecessary for MCP) | 3 | Done |
-| **Total saved** | | **21** | |
-
----
-
-## Pending Reductions (Phase 2: Medium-Low Risk) — ~10 tools saved
-
-### 2A. Broker CRUD (5→2) — 3 saved
-
-Keep `brokers_list`, merge rest into `brokers_manage(action, broker_id, broker_data)`.
-
-| Action | Required params |
-|--------|----------------|
-| `create` | `broker_data` |
-| `get` | `broker_id` |
-| `update` | `broker_id`, `broker_data` |
-| `delete` | `broker_id` |
-
-**Risk:** Low — classic CRUD dispatch, identical to `resources_get`/`resources_delete` pattern.
-
-### 2B. Licensing server CRUD (5→2) — 3 saved
-
-Keep `licensing_list_servers`, merge rest into `licensing_manage_server(action, server_id, server_data)`.
-
-Same pattern as 2A.
-
-### 2C. License activate/deactivate (2→1) — 1 saved
-
-Merge into `licensing_activation(action, activation_code)` where action is `activate` or `deactivate`.
-
-### 2D. License code info (2→1) — 1 saved
-
-Merge `licensing_get_activation_info` + `licensing_get_entitlement_info` into `licensing_get_code_info(code_type, code)` where code_type is `activation` or `entitlement`.
-
-### 2E. Stats plugins (3→1) — 2 saved
-
-Merge `stats_list_plugins`, `stats_create_plugin`, `stats_delete_plugin` into `stats_plugins(action, plugin_id, plugin_data, take, skip)`.
-
-**Phase 2 total: 118 → ~108**
+| 2A | Broker CRUD (5→2) → `brokers_manage` | 3 | Done |
+| 2B | Licensing server CRUD (5→2) → `licensing_manage_server` | 3 | Done |
+| 2C | License activate/deactivate → `licensing_activation` | 1 | Done |
+| 2D | License code info → `licensing_get_code_info` | 1 | Done |
+| 2E | Stats plugins (3→1) → `stats_plugins` | 2 | Done |
+| **Total saved** | | **31** | |
 
 ---
 
@@ -96,6 +64,6 @@ Merge into `migration(action, export_data)`.
 | Phase | Savings | Target |
 |-------|---------|--------|
 | Phase 1 (done) | 21 | 139 → 118 |
-| Phase 2 (pending) | ~10 | 118 → ~108 |
-| Phase 3 (pending) | ~7 | ~108 → ~101 |
+| Phase 2 (done) | 10 | 118 → 108 |
+| Phase 3 (pending) | ~7 | 108 → ~101 |
 | **Total potential** | **~38** | **139 → ~101** |

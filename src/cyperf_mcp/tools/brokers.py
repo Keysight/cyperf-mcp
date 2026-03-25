@@ -83,38 +83,28 @@ def register(mcp, client: CyPerfClientManager):
         return tools.list(take, skip)
 
     @mcp.tool()
-    def brokers_create(broker_data: dict) -> dict:
-        """[Brokers] Create a new broker.
+    def brokers_manage(action: str, broker_id: str = None, broker_data: dict = None) -> dict:
+        """[Brokers] Create, get, update, or delete a broker.
 
         Args:
-            broker_data: Broker properties (e.g. host, port, name)
+            action: One of: 'create', 'get', 'update', 'delete'
+            broker_id: The broker identifier (required for get/update/delete)
+            broker_data: Broker properties dict (required for create, optional for update)
         """
-        return tools.create(broker_data)
-
-    @mcp.tool()
-    def brokers_get(broker_id: str) -> dict:
-        """[Brokers] Get broker details by ID.
-
-        Args:
-            broker_id: The broker identifier
-        """
-        return tools.get(broker_id)
-
-    @mcp.tool()
-    def brokers_update(broker_id: str, properties: dict) -> dict:
-        """[Brokers] Update broker properties.
-
-        Args:
-            broker_id: The broker identifier
-            properties: Dict of broker properties to update
-        """
-        return tools.update(broker_id, properties)
-
-    @mcp.tool()
-    def brokers_delete(broker_id: str) -> dict:
-        """[Brokers] Delete a broker.
-
-        Args:
-            broker_id: The broker identifier to delete
-        """
-        return tools.delete(broker_id)
+        if action == "create":
+            if not broker_data:
+                return {"error": True, "message": "broker_data is required for create"}
+            return tools.create(broker_data)
+        elif action == "get":
+            if not broker_id:
+                return {"error": True, "message": "broker_id is required for get"}
+            return tools.get(broker_id)
+        elif action == "update":
+            if not broker_id:
+                return {"error": True, "message": "broker_id is required for update"}
+            return tools.update(broker_id, broker_data or {})
+        elif action == "delete":
+            if not broker_id:
+                return {"error": True, "message": "broker_id is required for delete"}
+            return tools.delete(broker_id)
+        return {"error": True, "message": f"Unknown action '{action}'. Use 'create', 'get', 'update', or 'delete'."}

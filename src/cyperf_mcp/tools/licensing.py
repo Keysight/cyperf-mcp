@@ -220,22 +220,18 @@ def register(mcp, client: CyPerfClientManager):
         return tools.get_license(license_id)
 
     @mcp.tool()
-    def licensing_activate(activation_code: str) -> dict:
-        """[Licensing] Activate a license with an activation code.
+    def licensing_activation(action: str, activation_code: str) -> dict:
+        """[Licensing] Activate or deactivate a license.
 
         Args:
+            action: 'activate' or 'deactivate'
             activation_code: The activation code
         """
-        return tools.activate(activation_code)
-
-    @mcp.tool()
-    def licensing_deactivate(activation_code: str) -> dict:
-        """[Licensing] Deactivate a license.
-
-        Args:
-            activation_code: The activation code to deactivate
-        """
-        return tools.deactivate(activation_code)
+        if action == "activate":
+            return tools.activate(activation_code)
+        elif action == "deactivate":
+            return tools.deactivate(activation_code)
+        return {"error": True, "message": f"Unknown action '{action}'. Use 'activate' or 'deactivate'."}
 
     @mcp.tool()
     def licensing_sync() -> dict:
@@ -273,22 +269,18 @@ def register(mcp, client: CyPerfClientManager):
         return tools.test_connectivity()
 
     @mcp.tool()
-    def licensing_get_activation_info(activation_code: str) -> dict:
-        """[Licensing] Get information about an activation code.
+    def licensing_get_code_info(code_type: str, code: str = None) -> dict:
+        """[Licensing] Get information about an activation or entitlement code.
 
         Args:
-            activation_code: The activation code to look up
+            code_type: 'activation' or 'entitlement'
+            code: The activation or entitlement code to look up
         """
-        return tools.get_activation_info(activation_code)
-
-    @mcp.tool()
-    def licensing_get_entitlement_info(entitlement_code: str) -> dict:
-        """[Licensing] Get information about an entitlement code.
-
-        Args:
-            entitlement_code: The entitlement code to look up
-        """
-        return tools.get_entitlement_info(entitlement_code)
+        if code_type == "activation":
+            return tools.get_activation_info(code or "")
+        elif code_type == "entitlement":
+            return tools.get_entitlement_info(code or "")
+        return {"error": True, "message": f"Unknown code_type '{code_type}'. Use 'activation' or 'entitlement'."}
 
     @mcp.tool()
     def licensing_get_feature_stats() -> dict:
@@ -306,47 +298,34 @@ def register(mcp, client: CyPerfClientManager):
         return tools.list_servers(take, skip)
 
     @mcp.tool()
-    def licensing_add_server(server_data: dict) -> dict:
-        """[Licensing] Add a license server.
+    def licensing_manage_server(action: str, server_id: str = None, server_data: dict = None) -> dict:
+        """[Licensing] Add, get, update, or delete a license server.
 
-        IMPORTANT: Always ask the user for username and password before calling this tool.
-        The server_data MUST include 'user' and 'password' fields for authentication.
-
-        Args:
-            server_data: License server properties. Required keys:
-                         host_name (str): IP or hostname of the license server
-                         user (str): Username for authentication (ask user if not provided)
-                         password (str): Password for authentication (ask user if not provided)
-                         trust_new (bool): Set to true to trust the server's identity (default: true)
-        """
-        if 'trust_new' not in server_data:
-            server_data['trust_new'] = True
-        return tools.add_server(server_data)
-
-    @mcp.tool()
-    def licensing_get_server(server_id: str) -> dict:
-        """[Licensing] Get license server details.
+        For 'add': server_data MUST include 'host_name', 'user', and 'password'.
+        Always ask the user for credentials before adding a server.
 
         Args:
-            server_id: The license server identifier
+            action: One of: 'add', 'get', 'update', 'delete'
+            server_id: The license server identifier (required for get/update/delete)
+            server_data: Server properties dict (required for add, optional for update).
+                         For add: host_name, user, password, trust_new (default true).
         """
-        return tools.get_server(server_id)
-
-    @mcp.tool()
-    def licensing_update_server(server_id: str, properties: dict) -> dict:
-        """[Licensing] Update license server properties.
-
-        Args:
-            server_id: The license server identifier
-            properties: Dict of properties to update
-        """
-        return tools.update_server(server_id, properties)
-
-    @mcp.tool()
-    def licensing_delete_server(server_id: str) -> dict:
-        """[Licensing] Delete a license server.
-
-        Args:
-            server_id: The license server identifier to delete
-        """
-        return tools.delete_server(server_id)
+        if action == "add":
+            if not server_data:
+                return {"error": True, "message": "server_data is required for add"}
+            if 'trust_new' not in server_data:
+                server_data['trust_new'] = True
+            return tools.add_server(server_data)
+        elif action == "get":
+            if not server_id:
+                return {"error": True, "message": "server_id is required for get"}
+            return tools.get_server(server_id)
+        elif action == "update":
+            if not server_id:
+                return {"error": True, "message": "server_id is required for update"}
+            return tools.update_server(server_id, server_data or {})
+        elif action == "delete":
+            if not server_id:
+                return {"error": True, "message": "server_id is required for delete"}
+            return tools.delete_server(server_id)
+        return {"error": True, "message": f"Unknown action '{action}'. Use 'add', 'get', 'update', or 'delete'."}

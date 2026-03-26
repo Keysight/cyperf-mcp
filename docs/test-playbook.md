@@ -359,7 +359,7 @@ sessions_delete(session_id)
 
 ### Scenario 11 — Session Introspection and Modification Workflow
 
-**Purpose:** Exercises the session query/update tools not covered by build-from-scratch or load-and-run scenarios. Covers: `sessions_list`, `sessions_get`, `sessions_update`, `sessions_get_config`, `sessions_load_config`, `sessions_get_meta`, `sessions_get_test`, `sessions_touch`.
+**Purpose:** Exercises the session query/update tools not covered by build-from-scratch or load-and-run scenarios. Covers: `sessions_list`, `sessions_get`, `sessions_update`, `sessions_get_config`, `sessions_load_config`, `sessions_get_meta`, `sessions_get_test`.
 
 ```
 # List all active sessions
@@ -377,7 +377,6 @@ sessions_get_test(session_id)
 sessions_update(session_id, properties={"description": "MCP playbook test session"})
 
 # Touch to keep session alive (resets idle timeout)
-sessions_touch(session_id)
 
 # Load a saved config into the existing session (replaces current config)
 sessions_load_config(session_id, config_url="appsec-276")
@@ -390,7 +389,7 @@ sessions_get(session_id)
 sessions_delete(session_id)
 ```
 
-**Expected:** All introspection calls return valid JSON. `sessions_update` changes description. `sessions_load_config` replaces session config with `appsec-276`. `sessions_touch` returns success (no error).
+**Expected:** All introspection calls return valid JSON. `sessions_update` changes description. `sessions_load_config` replaces session config with `appsec-276`.
 
 ---
 
@@ -1194,7 +1193,6 @@ system_disk_usage()
 | | sessions_load_config | S11 |
 | | sessions_get_meta | S11 |
 | | sessions_get_test | S11 |
-| | sessions_touch | S11 |
 | | sessions_add_applications | S1, S8, S10, S12 |
 | | sessions_add_attacks | S1, S8, S12 |
 | | sessions_get_applications | S12 |

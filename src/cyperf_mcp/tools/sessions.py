@@ -806,15 +806,6 @@ def register(mcp, client: CyPerfClientManager):
         return tools.get_test(session_id)
 
     @mcp.tool()
-    def sessions_touch(session_id: str) -> dict:
-        """[Sessions] Keep a session alive (heartbeat).
-
-        Args:
-            session_id: The session identifier
-        """
-        return tools.touch(session_id)
-
-    @mcp.tool()
     def sessions_add_applications(session_id: str, traffic_profile_id: str,
                                   app_names: list[str]) -> dict:
         """[Sessions] Add applications by name to a session's traffic profile.

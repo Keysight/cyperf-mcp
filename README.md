@@ -1,6 +1,6 @@
 # CyPerf MCP Server
 
-An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **102 tools** across 15 categories.
+An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **101 tools** across 15 categories.
 
 AI assistants connected via MCP can orchestrate CyPerf tests, manage agents, analyze results, and perform security testing — all through natural language.
 
@@ -113,7 +113,7 @@ src/cyperf_mcp/
 ├── helpers.py             # Serialization, error handling, async polling
 └── tools/
     ├── __init__.py        # Tool registration aggregator
-    ├── sessions.py        # Session & config management (26 tools)
+    ├── sessions.py        # Session & config management (25 tools)
     ├── resources.py       # Apps, attacks, TLS, captures (4 tools)
     ├── licensing.py       # License management (11 tools)
     ├── agents.py          # Agent management (11 tools)
@@ -132,11 +132,11 @@ src/cyperf_mcp/
 
 The server wraps the [`cyperf`](https://pypi.org/project/cyperf/) Python SDK's API classes directly. Each tool module follows a class-based pattern where a `*Tools` class holds the API logic, and a `register()` function wires `@mcp.tool()` decorated functions to those methods. Session config manipulation uses the SDK's DynamicModel pattern for in-place updates.
 
-## Tool Catalog (102 tools)
+## Tool Catalog (101 tools)
 
 All tools use `category_action` naming. Parameters with `= None` are optional.
 
-### Sessions — 26 tools
+### Sessions — 25 tools
 
 Manage test sessions, traffic/attack profiles, network segments, and test objectives.
 
@@ -152,7 +152,6 @@ Manage test sessions, traffic/attack profiles, network segments, and test object
 | `sessions_load_config` | Load a config into session |
 | `sessions_get_meta` | Get session metadata |
 | `sessions_get_test` | Get session test info (status, progress) |
-| `sessions_touch` | Keep session alive (heartbeat) |
 | `sessions_add_applications` | Add applications by name to a traffic profile |
 | `sessions_add_attacks` | Add attacks by name to an attack profile |
 | `sessions_get_applications` | List applications in a traffic profile |

@@ -584,35 +584,35 @@ resources_list_apps()
 resources_list_apps(take=5, skip=0)
 resources_search(resource_type="apps",query="HTTP")
 resources_search(resource_type="apps",query="ChatGPT")
-resources_get(resource_type="app",app_name="HTTP App")
+resources_search(resource_type="app",app_name="HTTP App")
 resources_list_attacks()
 resources_list_attacks(take=10, skip=0)
 resources_search(resource_type="attacks",query="Jailbreak")
 resources_search(resource_type="attacks",query="SQL Injection")
-resources_get(resource_type="attack",attack_name="DAN Jailbreak Attack on LLM - Variant 1")
-resources_browse(resource_type="app_types")
-resources_browse(resource_type="attack_categories")
-resources_browse(resource_type="captures")
-resources_browse(resource_type="tls_certs")
-resources_browse(resource_type="pcaps")
-resources_browse(resource_type="payloads")
-resources_browse(resource_type="auth_profiles")
-resources_browse(resource_type="http_profiles")
-resources_browse(resource_type="custom_fuzzing")
+resources_search(resource_type="attack",attack_name="DAN Jailbreak Attack on LLM - Variant 1")
+resources_search(resource_type="app_types")
+resources_search(resource_type="attack_categories")
+resources_search(resource_type="captures")
+resources_search(resource_type="tls_certs")
+resources_search(resource_type="pcaps")
+resources_search(resource_type="payloads")
+resources_search(resource_type="auth_profiles")
+resources_search(resource_type="http_profiles")
+resources_search(resource_type="custom_fuzzing")
 ```
 
 ### B1b — Resource CRUD (captures, TLS certs)
 
 ```
 # Captures: list → get → delete
-resources_browse(resource_type="captures")
-resources_get(resource_type="capture",capture_id=<id>)
+resources_search(resource_type="captures")
+resources_search(resource_type="capture",capture_id=<id>)
 resources_delete(resource_type="capture",capture_id=<id>)
 # Note: requires an existing capture from a prior test run
 
 # TLS certs: list → get → delete
-resources_browse(resource_type="tls_certs")
-resources_get(resource_type="tls_cert",cert_id=<id>)
+resources_search(resource_type="tls_certs")
+resources_search(resource_type="tls_cert",cert_id=<id>)
 resources_delete(resource_type="tls_cert",tls_cert_id=<id>)
 # Note: upload a test cert first via certs_upload or use an existing one
 ```
@@ -1182,12 +1182,10 @@ system_disk_usage()
 | | sessions_set_network_ip_range | S1-10, S13 |
 | | sessions_disable_automatic_network | S1-10, S13 |
 | | sessions_set_objective_and_timeline | S1, S4-7, S10 |
-| Resources (6) | resources_list_apps | B1 |
+| Resources (4) | resources_list_apps | B1 |
 | | resources_list_attacks | B1 |
-| | resources_browse | B1 (all 9 types) |
-| | resources_get | B1, B1b |
+| | resources_search | B1, B1b (list/get/search modes) |
 | | resources_delete | B1b |
-| | resources_search | B1 |
 | Licensing (17) | licensing_list_licenses | B4, C3 |
 | | licensing_get_license | B4 |
 | | licensing_activation (activate/deactivate) | C3 |

@@ -1,6 +1,6 @@
 # CyPerf MCP Server
 
-An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **104 tools** across 15 categories.
+An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **102 tools** across 15 categories.
 
 AI assistants connected via MCP can orchestrate CyPerf tests, manage agents, analyze results, and perform security testing — all through natural language.
 
@@ -114,7 +114,7 @@ src/cyperf_mcp/
 └── tools/
     ├── __init__.py        # Tool registration aggregator
     ├── sessions.py        # Session & config management (26 tools)
-    ├── resources.py       # Apps, attacks, TLS, captures (6 tools)
+    ├── resources.py       # Apps, attacks, TLS, captures (4 tools)
     ├── licensing.py       # License management (11 tools)
     ├── agents.py          # Agent management (11 tools)
     ├── controllers.py     # Controller and port management (10 tools)
@@ -132,7 +132,7 @@ src/cyperf_mcp/
 
 The server wraps the [`cyperf`](https://pypi.org/project/cyperf/) Python SDK's API classes directly. Each tool module follows a class-based pattern where a `*Tools` class holds the API logic, and a `register()` function wires `@mcp.tool()` decorated functions to those methods. Session config manipulation uses the SDK's DynamicModel pattern for in-place updates.
 
-## Tool Catalog (104 tools)
+## Tool Catalog (102 tools)
 
 All tools use `category_action` naming. Parameters with `= None` are optional.
 
@@ -226,18 +226,16 @@ Access and export test results, statistics, and reports.
 | `results_generate_report` | Generate report (csv, pdf, or all) |
 | `results_tags` | List result tags |
 
-### Resources — 6 tools
+### Resources — 4 tools
 
-Browse and search application resources, attacks, TLS certificates, captures, and more.
+Browse, search, and manage application resources, attacks, TLS certificates, captures, and more.
 
 | Tool | Description |
 |---|---|
-| `resources_list_apps` | List applications with optional search/filter |
-| `resources_list_attacks` | List attacks/strikes with optional search/filter |
-| `resources_browse` | Browse resource catalogs by type: `app_types`, `attack_categories`, `auth_profiles`, `captures`, `tls_certs`, `custom_fuzzing`, `payloads`, `pcaps`, `http_profiles` |
-| `resources_get` | Get resource details by type (`app`, `attack`, `capture`, `tls_cert`) and ID |
+| `resources_list_apps` | List applications with full search/filter/sort |
+| `resources_list_attacks` | List attacks/strikes with full search/filter/sort |
+| `resources_search` | Search, list, or get a resource. List mode (no params): `app_types`, `attack_categories`, `auth_profiles`, `captures`, `tls_certs`, `custom_fuzzing`, `payloads`, `pcaps`, `http_profiles`. Get by ID: `app`, `attack`, `capture`, `tls_cert`. Substring search: `apps`, `attacks` |
 | `resources_delete` | Delete resource by type (`capture`, `tls_cert`, `tls_key`) and ID |
-| `resources_search` | Search resources by type (`apps`, `attacks`) with substring match on name/description |
 
 ### Controllers — 10 tools
 

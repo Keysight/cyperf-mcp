@@ -1,6 +1,6 @@
 # Future Tool Reductions
 
-Current tool count: **104** (down from 139 via Phase 1+2 consolidation + merges/removals)
+Current tool count: **102** (down from 139 via Phase 1+2 consolidation + merges/removals)
 
 ## Completed Consolidations
 
@@ -24,7 +24,8 @@ Current tool count: **104** (down from 139 via Phase 1+2 consolidation + merges/
 | 2E | Stats plugins (3→1) → `stats_plugins` | 2 | Done |
 | — | Removed `sessions_delete_traffic_profile` / `sessions_delete_attack_profile` — auto-delete on last item removal | 2 | Done |
 | — | Merged `licensing_reserve_feature` + `licensing_remove_reservation` → `licensing_reservation(action)` | 1 | Done |
-| **Total saved** | | **35** | |
+| — | Merged `resources_browse` + `resources_get` + `resources_search` → unified `resources_search` | 2 | Done |
+| **Total saved** | | **37** | |
 
 ---
 
@@ -71,5 +72,6 @@ Merge into `migration(action, export_data)`.
 | Merge test_stop/abort | 1 | 108 → 107 |
 | Remove profile delete tools (auto-delete) | 2 | 107 → 105 |
 | Merge licensing reservation tools | 1 | 105 → 104 |
-| Phase 3 (pending) | ~4 | 104 → ~100 |
-| **Total potential** | **~39** | **139 → ~100** |
+| Merge resources browse/get/search | 2 | 104 → 102 |
+| Phase 3 (pending) | ~3 | 102 → ~99 |
+| **Total potential** | **~40** | **139 → ~99** |

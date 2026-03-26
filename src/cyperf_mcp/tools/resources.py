@@ -230,37 +230,36 @@ def register(mcp, client: CyPerfClientManager):
         """
         return tools.list_attacks(take, skip, search_col, search_val, filter_mode, sort)
 
-    # ── 1A: Unified browse for simple resource types ──
+    # ── Unified search/browse/get ──
 
     @mcp.tool()
-    def resources_browse(resource_type: str, take: int = None, skip: int = None) -> dict:
-        """[Resources] Browse a resource catalog by type.
+    def resources_search(resource_type: str, resource_id: str = None,
+                         query: str = None, take: int = None, skip: int = None) -> dict:
+        """[Resources] Search, list, or get a specific resource.
 
-        Lists items from a specific resource category. For apps and attacks
-        (which support full search/filter), use resources_list_apps or resources_list_attacks instead.
+        Behavior depends on which optional params are provided:
+        - resource_id provided → get one item by ID (resource_id takes priority over query)
+        - query provided → substring search on name/description
+        - neither → list all items of that type
 
         Args:
-            resource_type: One of: app_types, attack_categories, auth_profiles,
-                          captures, tls_certs, custom_fuzzing, payloads, pcaps, http_profiles.
-                          Note: tls_certs lists certificate *files*, not cipher configuration.
-            take: Number of results to return
-            skip: Number of results to skip
+            resource_type: The resource type. Valid values depend on mode:
+                List mode: app_types, attack_categories, auth_profiles, captures,
+                          tls_certs, custom_fuzzing, payloads, pcaps, http_profiles
+                Get by ID: app, attack, capture, tls_cert
+                Search:    apps, attacks
+            resource_id: Get a specific resource by ID (e.g. '192', '2233')
+            query: Search string to match against name/description (e.g. 'streaming', 'CVE-2024')
+            take: Number of results to return (list mode only)
+            skip: Number of results to skip (list mode only)
         """
+        if resource_id is not None:
+            return tools.get(resource_type, resource_id)
+        if query is not None:
+            return tools.search(resource_type, query)
         return tools.browse(resource_type, take, skip)
 
-    # ── 1B: Unified get-by-ID ──
-
-    @mcp.tool()
-    def resources_get(resource_type: str, resource_id: str) -> dict:
-        """[Resources] Get details of a specific resource by type and ID.
-
-        Args:
-            resource_type: One of: app, attack, capture, tls_cert
-            resource_id: The resource identifier
-        """
-        return tools.get(resource_type, resource_id)
-
-    # ── 1C: Unified delete ──
+    # ── Delete ──
 
     @mcp.tool()
     def resources_delete(resource_type: str, resource_id: str) -> dict:
@@ -271,18 +270,3 @@ def register(mcp, client: CyPerfClientManager):
             resource_id: The resource identifier to delete
         """
         return tools.delete(resource_type, resource_id)
-
-    # ── 1D: Unified search (client-side substring match) ──
-
-    @mcp.tool()
-    def resources_search(resource_type: str, query: str) -> dict:
-        """[Resources] Search resources by substring match against name or description.
-
-        Fetches all items and filters client-side (case-insensitive).
-        Returns compact results with name, id, and description.
-
-        Args:
-            resource_type: One of: apps, attacks
-            query: Search string to match (e.g. 'LLM', 'streaming', 'CVE-2024', 'injection')
-        """
-        return tools.search(resource_type, query)

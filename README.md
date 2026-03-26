@@ -1,6 +1,6 @@
 # CyPerf MCP Server
 
-An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **101 tools** across 15 categories.
+An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **100 tools** across 15 categories.
 
 AI assistants connected via MCP can orchestrate CyPerf tests, manage agents, analyze results, and perform security testing — all through natural language.
 
@@ -119,7 +119,7 @@ src/cyperf_mcp/
     ├── agents.py          # Agent management (11 tools)
     ├── controllers.py     # Controller and port management (10 tools)
     ├── results.py         # Results and reporting (8 tools)
-    ├── configs.py         # Configuration management (7 tools)
+    ├── configs.py         # Configuration management (6 tools)
     ├── system.py          # System utilities (5 tools)
     ├── notifications.py   # Notification management (5 tools)
     ├── test_ops.py        # Test execution (3 tools)
@@ -132,7 +132,7 @@ src/cyperf_mcp/
 
 The server wraps the [`cyperf`](https://pypi.org/project/cyperf/) Python SDK's API classes directly. Each tool module follows a class-based pattern where a `*Tools` class holds the API logic, and a `register()` function wires `@mcp.tool()` decorated functions to those methods. Session config manipulation uses the SDK's DynamicModel pattern for in-place updates.
 
-## Tool Catalog (101 tools)
+## Tool Catalog (100 tools)
 
 All tools use `category_action` naming. Parameters with `= None` are optional.
 
@@ -186,14 +186,13 @@ Manage CyPerf test agents (virtual or hardware appliances).
 | `agents_tags` | List agent tags |
 | `agents_export_files` | Export agent files (logs, configs) |
 
-### Configurations — 7 tools
+### Configurations — 6 tools
 
 Manage saved test configurations (templates).
 
 | Tool | Description |
 |---|---|
 | `configs_list` | List configurations with optional search/filter (includes PQC/Kyber/TLS configs) |
-| `configs_get` | Get configuration by ID |
 | `configs_delete` | Delete one or more configurations |
 | `configs_update` | Update configuration metadata |
 | `configs_import` | Import configuration(s) from file (`import_all=True` for bulk) |

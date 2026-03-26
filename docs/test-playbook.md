@@ -710,7 +710,7 @@ agents_export_files(agent_ids=[<id>], file_type="logs")
 ```
 configs_list()
 configs_list(search_col="displayName", search_val="LLM", filter_mode="contains")
-configs_get(config_id="appsec-276")
+configs_list(search_col="name", search_val="LLM", filter_mode="contains")
 configs_export_all()
 configs_update(config_id=<id>, name="MCP Test Config Renamed")
 configs_delete(config_ids=[<id>])
@@ -1245,7 +1245,6 @@ system_disk_usage()
 | | controllers_set_link_state | B6b |
 | | controllers_set_aggregation | B6b |
 | Configs (7) | configs_list | B3, B3b |
-| | configs_get | B3 |
 | | configs_delete | B3, B3b, S14 |
 | | configs_update | B3 |
 | | configs_import | S14, B3b (import_all=True for bulk) |

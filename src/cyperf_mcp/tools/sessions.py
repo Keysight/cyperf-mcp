@@ -417,7 +417,7 @@ class SessionTools:
 
     def remove_application(self, session_id: str, traffic_profile_id: str = "1",
                             app_id: str = None):
-        """Remove an application by its ID from a session's traffic profile."""
+        """Remove an application by its ID. Auto-deletes the traffic profile if empty."""
         try:
             session = self.api.get_session_by_id(session_id)
             idx = int(traffic_profile_id) - 1
@@ -428,6 +428,14 @@ class SessionTools:
                 if str(app.base_model.id) == str(app_id):
                     removed_name = getattr(app.base_model, 'name', app_id)
                     app.delete()
+                    # Re-fetch to check if profile is now empty
+                    session = self.api.get_session_by_id(session_id)
+                    if session.config.config.traffic_profiles:
+                        refreshed = session.config.config.traffic_profiles[idx]
+                        remaining = len(list(refreshed.applications))
+                        if remaining == 0:
+                            refreshed.delete()
+                            return {"result": f"Application '{removed_name}' (id={app_id}) removed. Traffic profile auto-deleted (was empty)."}
                     return {"result": f"Application '{removed_name}' (id={app_id}) removed"}
             return {"error": True, "message": f"Application with id={app_id} not found in traffic profile"}
         except cyperf.ApiException as e:
@@ -437,7 +445,7 @@ class SessionTools:
 
     def remove_attack(self, session_id: str, attack_profile_id: str = "1",
                       attack_id: str = None):
-        """Remove an attack by its ID from a session's attack profile."""
+        """Remove an attack by its ID. Auto-deletes the attack profile if empty."""
         try:
             session = self.api.get_session_by_id(session_id)
             idx = int(attack_profile_id) - 1
@@ -448,6 +456,14 @@ class SessionTools:
                 if str(attack.base_model.id) == str(attack_id):
                     removed_name = getattr(attack.base_model, 'name', attack_id)
                     attack.delete()
+                    # Re-fetch to check if profile is now empty
+                    session = self.api.get_session_by_id(session_id)
+                    if session.config.config.attack_profiles:
+                        refreshed = session.config.config.attack_profiles[idx]
+                        remaining = len(list(refreshed.attacks))
+                        if remaining == 0:
+                            refreshed.delete()
+                            return {"result": f"Attack '{removed_name}' (id={attack_id}) removed. Attack profile auto-deleted (was empty)."}
                     return {"result": f"Attack '{removed_name}' (id={attack_id}) removed"}
             return {"error": True, "message": f"Attack with id={attack_id} not found in attack profile"}
         except cyperf.ApiException as e:
@@ -904,6 +920,7 @@ def register(mcp, client: CyPerfClientManager):
                                      app_id: str = None) -> dict:
         """[Sessions] Remove an application from a session's traffic profile by app ID.
 
+        Auto-deletes the traffic profile if it becomes empty after removal.
         Use sessions_get_applications to find the app ID first.
 
         Args:
@@ -918,6 +935,7 @@ def register(mcp, client: CyPerfClientManager):
                                 attack_id: str = None) -> dict:
         """[Sessions] Remove an attack from a session's attack profile by attack ID.
 
+        Auto-deletes the attack profile if it becomes empty after removal.
         Use sessions_get_attacks to find the attack ID first.
 
         Args:
@@ -926,28 +944,6 @@ def register(mcp, client: CyPerfClientManager):
             attack_id: The attack ID within the attack profile to remove
         """
         return tools.remove_attack(session_id, attack_profile_id, attack_id)
-
-    @mcp.tool()
-    def sessions_delete_attack_profile(session_id: str,
-                                       attack_profile_id: str = "1") -> dict:
-        """[Sessions] Delete an attack profile from a session.
-
-        Args:
-            session_id: The session identifier
-            attack_profile_id: The attack profile ID to delete (default '1')
-        """
-        return tools.delete_attack_profile(session_id, attack_profile_id)
-
-    @mcp.tool()
-    def sessions_delete_traffic_profile(session_id: str,
-                                        traffic_profile_id: str = "1") -> dict:
-        """[Sessions] Delete a traffic/application profile from a session.
-
-        Args:
-            session_id: The session identifier
-            traffic_profile_id: The traffic profile ID to delete (default '1')
-        """
-        return tools.delete_traffic_profile(session_id, traffic_profile_id)
 
     @mcp.tool()
     def sessions_assign_agents(session_id: str, agent_assignments: dict) -> dict:

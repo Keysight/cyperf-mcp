@@ -1,6 +1,6 @@
 # Future Tool Reductions
 
-Current tool count: **107** (down from 139 via Phase 1+2 consolidation + 4 merged/removed)
+Current tool count: **105** (down from 139 via Phase 1+2 consolidation + merges/removals)
 
 ## Completed Consolidations
 
@@ -22,19 +22,20 @@ Current tool count: **107** (down from 139 via Phase 1+2 consolidation + 4 merge
 | 2C | License activate/deactivate → `licensing_activation` | 1 | Done |
 | 2D | License code info → `licensing_get_code_info` | 1 | Done |
 | 2E | Stats plugins (3→1) → `stats_plugins` | 2 | Done |
-| **Total saved** | | **32** | |
+| — | Removed `sessions_delete_traffic_profile` / `sessions_delete_attack_profile` — auto-delete on last item removal | 2 | Done |
+| **Total saved** | | **34** | |
 
 ---
 
-## Pending Reductions (Phase 3: Medium Risk) — ~7 tools saved
+## Pending Reductions (Phase 3: Medium Risk) — ~5 tools saved
 
-### 3A. Traffic profile CRUD (4→1) — 3 saved
+### 3A. Traffic profile tools (3→1) — 2 saved
 
-Merge `sessions_add_applications`, `sessions_get_applications`, `sessions_remove_application`, `sessions_delete_traffic_profile` into `sessions_traffic_profile(session_id, action, ...)`.
+Merge `sessions_add_applications`, `sessions_get_applications`, `sessions_remove_application` into `sessions_traffic_profile(session_id, action, ...)`.
 
 **Risk:** Complex conditional params — `app_names` only for `add`, `app_id` only for `remove`. These tools are on the critical test setup path.
 
-### 3B. Attack profile CRUD (4→1) — 3 saved
+### 3B. Attack profile tools (3→1) — 2 saved
 
 Mirror of 3A for attacks.
 
@@ -67,5 +68,6 @@ Merge into `migration(action, export_data)`.
 | Phase 1 (done) | 21 | 139 → 118 |
 | Phase 2 (done) | 10 | 118 → 108 |
 | Merge test_stop/abort | 1 | 108 → 107 |
-| Phase 3 (pending) | ~7 | 107 → ~100 |
+| Remove profile delete tools (auto-delete) | 2 | 107 → 105 |
+| Phase 3 (pending) | ~5 | 105 → ~100 |
 | **Total potential** | **~39** | **139 → ~100** |

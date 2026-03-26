@@ -77,11 +77,7 @@ sessions_delete(session_id)
 # Create a blank session
 sessions_create()
 
-# Remove default profiles
-sessions_delete_traffic_profile(session_id)
-sessions_delete_attack_profile(session_id)
-
-# Add 7 LLM/HTTP applications
+# Add 7 LLM/HTTP applications (auto-creates traffic profile if none exists)
 sessions_add_applications(session_id, app_names=[
     "AI LLM over Generic HTTP", "ChatGPT", "ChatGPT4",
     "Claude AI", "Gemini API", "Grok API", "HTTP App"
@@ -1180,8 +1176,6 @@ system_disk_usage()
 | | sessions_set_app_action_param | S1 |
 | | sessions_remove_application | S12 |
 | | sessions_remove_attack | S12 |
-| | sessions_delete_attack_profile | S1 |
-| | sessions_delete_traffic_profile | S1 |
 | | sessions_assign_agents | S1-10, S13 |
 | | sessions_rename_network_segments | S12 |
 | | sessions_get_network_segments | S1-10, S12 |

@@ -1,6 +1,6 @@
 # CyPerf MCP Server
 
-An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **107 tools** across 15 categories.
+An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **105 tools** across 15 categories.
 
 AI assistants connected via MCP can orchestrate CyPerf tests, manage agents, analyze results, and perform security testing — all through natural language.
 
@@ -113,7 +113,7 @@ src/cyperf_mcp/
 ├── helpers.py             # Serialization, error handling, async polling
 └── tools/
     ├── __init__.py        # Tool registration aggregator
-    ├── sessions.py        # Session & config management (28 tools)
+    ├── sessions.py        # Session & config management (26 tools)
     ├── resources.py       # Apps, attacks, TLS, captures (6 tools)
     ├── licensing.py       # License management (12 tools)
     ├── agents.py          # Agent management (11 tools)
@@ -132,11 +132,11 @@ src/cyperf_mcp/
 
 The server wraps the [`cyperf`](https://pypi.org/project/cyperf/) Python SDK's API classes directly. Each tool module follows a class-based pattern where a `*Tools` class holds the API logic, and a `register()` function wires `@mcp.tool()` decorated functions to those methods. Session config manipulation uses the SDK's DynamicModel pattern for in-place updates.
 
-## Tool Catalog (107 tools)
+## Tool Catalog (105 tools)
 
 All tools use `category_action` naming. Parameters with `= None` are optional.
 
-### Sessions — 28 tools
+### Sessions — 26 tools
 
 Manage test sessions, traffic/attack profiles, network segments, and test objectives.
 
@@ -160,10 +160,8 @@ Manage test sessions, traffic/attack profiles, network segments, and test object
 | `sessions_get_app_actions` | List actions and params for an application |
 | `sessions_set_app_action_param` | Set an action parameter value |
 | `sessions_remove_app_action` | Remove an action from an application |
-| `sessions_remove_application` | Remove an application from a traffic profile |
-| `sessions_remove_attack` | Remove an attack from an attack profile |
-| `sessions_delete_traffic_profile` | Delete a traffic/application profile |
-| `sessions_delete_attack_profile` | Delete an attack profile |
+| `sessions_remove_application` | Remove an application (auto-deletes empty traffic profile) |
+| `sessions_remove_attack` | Remove an attack (auto-deletes empty attack profile) |
 | `sessions_assign_agents` | Assign agents to named network segments |
 | `sessions_rename_network_segments` | Rename network segments |
 | `sessions_get_network_segments` | List network segments with IP range details |

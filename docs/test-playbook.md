@@ -577,19 +577,26 @@ results_delete(result_ids=[result_id])
 Quick targeted tests for individual tool categories that aren't fully
 exercised by the end-to-end scenarios above.
 
-### B1 — Resource browsing and search
+### B1 — Resource search (list/get/search modes)
 
 ```
+# --- List mode (resources_list_apps/attacks with full search/filter) ---
 resources_list_apps()
 resources_list_apps(take=5, skip=0)
-resources_search(resource_type="apps",query="HTTP")
-resources_search(resource_type="apps",query="ChatGPT")
-resources_search(resource_type="app",app_name="HTTP App")
 resources_list_attacks()
 resources_list_attacks(take=10, skip=0)
-resources_search(resource_type="attacks",query="Jailbreak")
-resources_search(resource_type="attacks",query="SQL Injection")
-resources_search(resource_type="attack",attack_name="DAN Jailbreak Attack on LLM - Variant 1")
+
+# --- Search mode (substring match on name/description) ---
+resources_search(resource_type="apps", query="HTTP")
+resources_search(resource_type="apps", query="ChatGPT")
+resources_search(resource_type="attacks", query="Jailbreak")
+resources_search(resource_type="attacks", query="SQL Injection")
+
+# --- Get by ID mode ---
+resources_search(resource_type="app", resource_id="192")
+resources_search(resource_type="attack", resource_id="2233")
+
+# --- List mode (browse all 9 catalog types) ---
 resources_search(resource_type="app_types")
 resources_search(resource_type="attack_categories")
 resources_search(resource_type="captures")
@@ -599,6 +606,27 @@ resources_search(resource_type="payloads")
 resources_search(resource_type="auth_profiles")
 resources_search(resource_type="http_profiles")
 resources_search(resource_type="custom_fuzzing")
+
+# --- List mode with pagination ---
+resources_search(resource_type="app_types", take=3)
+resources_search(resource_type="payloads", take=2, skip=5)
+
+# --- Corner cases ---
+# Invalid resource_type for list mode → should return clear error
+resources_search(resource_type="invalid_type")
+# Expected: error with valid types listed
+
+# resource_id takes priority over query (query ignored)
+resources_search(resource_type="app", resource_id="192", query="ignored")
+# Expected: returns app 192, query is ignored
+
+# Search with empty result
+resources_search(resource_type="apps", query="xyznonexistent12345")
+# Expected: {"count": 0, "matches": []}
+
+# Get by ID with invalid ID → should return API error
+resources_search(resource_type="app", resource_id="99999999")
+# Expected: error (not found)
 ```
 
 ### B1b — Resource CRUD (captures, TLS certs)
@@ -606,14 +634,14 @@ resources_search(resource_type="custom_fuzzing")
 ```
 # Captures: list → get → delete
 resources_search(resource_type="captures")
-resources_search(resource_type="capture",capture_id=<id>)
-resources_delete(resource_type="capture",capture_id=<id>)
+resources_search(resource_type="capture", resource_id=<id>)
+resources_delete(resource_type="capture", resource_id=<id>)
 # Note: requires an existing capture from a prior test run
 
 # TLS certs: list → get → delete
 resources_search(resource_type="tls_certs")
-resources_search(resource_type="tls_cert",cert_id=<id>)
-resources_delete(resource_type="tls_cert",tls_cert_id=<id>)
+resources_search(resource_type="tls_cert", resource_id=<id>)
+resources_delete(resource_type="tls_cert", resource_id=<id>)
 # Note: upload a test cert first via certs_upload or use an existing one
 ```
 

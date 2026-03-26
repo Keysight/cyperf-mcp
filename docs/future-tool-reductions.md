@@ -1,6 +1,6 @@
 # Future Tool Reductions
 
-Current tool count: **100** (down from 139 via Phase 1+2 consolidation + merges/removals)
+Current tool count: **101** (down from 139 via Phase 1+2 consolidation + merges/removals)
 
 ## Completed Consolidations
 
@@ -26,8 +26,7 @@ Current tool count: **100** (down from 139 via Phase 1+2 consolidation + merges/
 | — | Merged `licensing_reserve_feature` + `licensing_remove_reservation` → `licensing_reservation(action)` | 1 | Done |
 | — | Merged `resources_browse` + `resources_get` + `resources_search` → unified `resources_search` | 2 | Done |
 | — | Removed `sessions_touch` (unused heartbeat, sessions don't expire during active use) | 1 | Done |
-| — | Removed `configs_get` (configs_list with search covers the same need) | 1 | Done |
-| **Total saved** | | **39** | |
+| **Total saved** | | **38** | |
 
 ---
 
@@ -76,6 +75,5 @@ Merge into `migration(action, export_data)`.
 | Merge licensing reservation tools | 1 | 105 → 104 |
 | Merge resources browse/get/search | 2 | 104 → 102 |
 | Remove sessions_touch | 1 | 102 → 101 |
-| Remove configs_get | 1 | 101 → 100 |
-| Phase 3 (pending) | ~2 | 100 → ~98 |
-| **Total potential** | **~41** | **139 → ~98** |
+| Phase 3 (pending) | ~2 | 101 → ~99 |
+| **Total potential** | **~40** | **139 → ~99** |

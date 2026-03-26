@@ -164,6 +164,15 @@ def register(mcp, client: CyPerfClientManager):
         return tools.list(take, skip, search_col, search_val, filter_mode, sort)
 
     @mcp.tool()
+    def configs_get(config_id: str) -> dict:
+        """[Configurations] Get a configuration by ID.
+
+        Args:
+            config_id: The configuration identifier
+        """
+        return tools.get(config_id)
+
+    @mcp.tool()
     def configs_delete(config_ids: list[str]) -> dict:
         """[Configurations] Delete one or more configurations.
 

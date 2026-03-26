@@ -766,9 +766,9 @@ licensing_list_servers()
 
 # --- Feature reservation ---
 licensing_list_licenses()
-# licensing_reserve_feature(license_id=<id>, feature_name="<feature>", count=1)
+# licensing_reservation(action="reserve",license_id=<id>, feature_name="<feature>", count=1)
 # Expected: feature reserved from license pool
-# licensing_remove_reservation(license_id=<id>)
+# licensing_reservation(action="remove",license_id=<id>)
 # Expected: reservation released
 
 # Get activation and entitlement info (read-only, always safe)
@@ -782,7 +782,7 @@ licensing_get_hostid()
 
 **Notes:**
 - `licensing_activation` requires real activation codes — do not test with dummy values
-- `licensing_reserve_feature` / `licensing_remove_reservation` require an active license with available features
+- `licensing_reservation` requires an active license with available features
 - `licensing_delete_server` is safe if the server was added during this test session
 
 ---
@@ -1117,12 +1117,12 @@ licensing_list_licenses()
 # Expected: new license appears
 
 # Reserve a feature from the license
-licensing_reserve_feature(license_id=<id>, feature_name="<feature>", count=1)
+licensing_reservation(action="reserve",license_id=<id>, feature_name="<feature>", count=1)
 licensing_get_feature_stats()
 # Expected: feature reservation shows count=1
 
 # Remove reservation
-licensing_remove_reservation(license_id=<id>)
+licensing_reservation(action="remove",license_id=<id>)
 licensing_get_feature_stats()
 # Expected: reservation released
 
@@ -1193,8 +1193,7 @@ system_disk_usage()
 | | licensing_activation (activate/deactivate) | C3 |
 | | licensing_sync | B4, B4b |
 | | licensing_get_hostid | B4, C3 |
-| | licensing_reserve_feature | C3 |
-| | licensing_remove_reservation | C3 |
+| | licensing_reservation (reserve/remove) | C3 |
 | | licensing_test_connectivity | B4, B4b |
 | | licensing_get_code_info (activation/entitlement) | B4, B4b, C3 |
 | | licensing_get_feature_stats | B4, B4b, C3 |

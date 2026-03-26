@@ -1,6 +1,6 @@
 # CyPerf MCP Server
 
-An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **105 tools** across 15 categories.
+An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **104 tools** across 15 categories.
 
 AI assistants connected via MCP can orchestrate CyPerf tests, manage agents, analyze results, and perform security testing — all through natural language.
 
@@ -115,7 +115,7 @@ src/cyperf_mcp/
     ├── __init__.py        # Tool registration aggregator
     ├── sessions.py        # Session & config management (26 tools)
     ├── resources.py       # Apps, attacks, TLS, captures (6 tools)
-    ├── licensing.py       # License management (12 tools)
+    ├── licensing.py       # License management (11 tools)
     ├── agents.py          # Agent management (11 tools)
     ├── controllers.py     # Controller and port management (10 tools)
     ├── results.py         # Results and reporting (8 tools)
@@ -132,7 +132,7 @@ src/cyperf_mcp/
 
 The server wraps the [`cyperf`](https://pypi.org/project/cyperf/) Python SDK's API classes directly. Each tool module follows a class-based pattern where a `*Tools` class holds the API logic, and a `register()` function wires `@mcp.tool()` decorated functions to those methods. Session config manipulation uses the SDK's DynamicModel pattern for in-place updates.
 
-## Tool Catalog (105 tools)
+## Tool Catalog (104 tools)
 
 All tools use `category_action` naming. Parameters with `= None` are optional.
 
@@ -265,7 +265,7 @@ Manage network brokers.
 | `brokers_list` | List brokers |
 | `brokers_manage` | Create, get, update, or delete a broker (`action`: create/get/update/delete) |
 
-### Licensing — 12 tools
+### Licensing — 11 tools
 
 Manage licenses and license servers.
 
@@ -276,8 +276,7 @@ Manage licenses and license servers.
 | `licensing_activation` | Activate or deactivate a license (`action`: activate/deactivate) |
 | `licensing_sync` | Synchronize licenses |
 | `licensing_get_hostid` | Get host ID |
-| `licensing_reserve_feature` | Reserve a license feature |
-| `licensing_remove_reservation` | Remove a reservation |
+| `licensing_reservation` | Reserve or remove a license feature (`action`: reserve/remove) |
 | `licensing_test_connectivity` | Test backend connectivity |
 | `licensing_get_code_info` | Get activation or entitlement code info (`code_type`: activation/entitlement) |
 | `licensing_get_feature_stats` | Get feature statistics |

@@ -244,23 +244,22 @@ def register(mcp, client: CyPerfClientManager):
         return tools.get_hostid()
 
     @mcp.tool()
-    def licensing_reserve_feature(license_id: int, feature_name: str, count: int) -> dict:
-        """[Licensing] Reserve a license feature.
+    def licensing_reservation(action: str, license_id: int, feature_name: str = None, count: int = None) -> dict:
+        """[Licensing] Reserve or remove a license feature reservation.
 
         Args:
+            action: 'reserve' to reserve a feature, 'remove' to remove a reservation
             license_id: The license identifier
-            feature_name: Name of the feature to reserve
-            count: Number of units to reserve
+            feature_name: Name of the feature to reserve (required for 'reserve')
+            count: Number of units to reserve (required for 'reserve')
         """
-        return tools.reserve_feature(license_id, feature_name, count)
-
-    @mcp.tool()
-    def licensing_remove_reservation(license_id: int) -> dict:
-        """[Licensing] Remove a license reservation.
-
-        Args:
-            license_id: The license identifier
-        """
+        if action == "reserve":
+            if not feature_name or count is None:
+                return {"error": True, "message": "feature_name and count are required for reserve"}
+            return tools.reserve_feature(license_id, feature_name, count)
+        elif action == "remove":
+            return tools.remove_reservation(license_id)
+        return {"error": True, "message": f"Unknown action '{action}'. Use 'reserve' or 'remove'."}
         return tools.remove_reservation(license_id)
 
     @mcp.tool()

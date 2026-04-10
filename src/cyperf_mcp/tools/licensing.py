@@ -106,7 +106,7 @@ class LicensingTools:
     def get_activation_info(self, activation_code: str):
         try:
             req = cyperf.ActivationCodeRequest(activation_code=activation_code)
-            result = self.api.get_activation_code_info(request=req)
+            result = self.api.get_activation_code_info(activation_code_request=req)
             return serialize_response(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -116,7 +116,7 @@ class LicensingTools:
     def get_entitlement_info(self, entitlement_code: str):
         try:
             req = cyperf.EntitlementCodeRequest(entitlement_code=entitlement_code)
-            result = self.api.get_entitlement_code_info(request=req)
+            result = self.api.get_entitlement_code_info(entitlement_code_request=req)
             return serialize_response(result)
         except cyperf.ApiException as e:
             return handle_api_error(e)

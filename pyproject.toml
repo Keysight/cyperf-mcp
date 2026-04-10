@@ -1,6 +1,6 @@
 [project]
 name = "cyperf-mcp"
-version = "0.1.0"
+version = "7.0.6"
 description = "MCP server for Keysight CyPerf network testing platform"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -25,7 +25,7 @@ classifiers = [
 ]
 dependencies = [
     "mcp[cli]>=1.0.0",
-    "cyperf>=7.0.6",
+    "cyperf>=6.0.2",
 ]
 
 [project.urls]
@@ -35,6 +35,17 @@ Issues = "https://github.com/Keysight/cyperf-mcp/issues"
 
 [project.scripts]
 cyperf-mcp = "cyperf_mcp.cyperf_mcp_server:main"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".mcptrial/",
+    ".mcpenv/",
+    ".claude/",
+    "CLAUDE.md",
+    "comparative-studies/",
+    "docs/",
+    "dist/",
+]
 
 [build-system]
 requires = ["hatchling"]

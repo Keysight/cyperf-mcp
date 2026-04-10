@@ -14,10 +14,15 @@ AI assistants connected via MCP can orchestrate CyPerf tests, manage agents, ana
 ### Installation
 
 ```bash
-# Clone the repository
-git clone <repo-url> && cd cyperf-mcp
+python -m venv .venv
+source .venv/bin/activate
+pip install cyperf-mcp
+```
 
-# Create a virtual environment and install
+**From source** (for development):
+
+```bash
+git clone https://github.com/Keysight/cyperf-mcp.git && cd cyperf-mcp
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
@@ -25,9 +30,15 @@ pip install -e .
 
 ### Configuration
 
-Create `~/.cyperf/config.json` with your controller connection details. You can override the path with the `CYPERF_CONFIG` environment variable.
+Before running, create a configuration file with your CyPerf controller connection details.
 
-**Multi-profile format** (recommended):
+**Config file location** (checked in order):
+1. Path passed via `CYPERF_CONFIG` environment variable
+2. `~/.cyperf/config.json` (default)
+
+Run `cyperf-mcp --help` to see this information from the command line.
+
+**Multi-profile format** (recommended — manage multiple controllers):
 
 ```json
 {
@@ -48,7 +59,7 @@ Create `~/.cyperf/config.json` with your controller connection details. You can 
 }
 ```
 
-**Single-profile shorthand**:
+**Single-profile shorthand** (one controller):
 
 ```json
 {
@@ -63,6 +74,8 @@ Each profile requires:
 - Authentication — either `refresh_token` or `username` + `password`
 - `verify_ssl` (optional, defaults to `true`)
 
+A `config.example.json` is included in the repository for reference.
+
 ### Running
 
 **Stdio transport** (for AI assistant integration):
@@ -72,7 +85,7 @@ cyperf-mcp
 
 **MCP Inspector** (interactive testing):
 ```bash
-mcp dev src/cyperf_mcp/cyperf_mcp_server.py
+mcp dev cyperf-mcp
 ```
 
 ### Claude Desktop Integration

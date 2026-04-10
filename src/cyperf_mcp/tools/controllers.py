@@ -82,8 +82,10 @@ class ControllerTools:
 
     def set_app(self, controller_id: str, app_id: str):
         try:
-            op = cyperf.SetAppOperation(controller_id=controller_id, app_id=app_id)
-            result = self.api.start_controllers_set_app(set_app_operation=op)
+            OpClass = getattr(cyperf, 'SetControllerAppOperation', None) or cyperf.SetAppOperation
+            op = OpClass(controller_id=controller_id, app_id=app_id)
+            param_name = 'set_controller_app_operation' if hasattr(cyperf, 'SetControllerAppOperation') else 'set_app_operation'
+            result = self.api.start_controllers_set_app(**{param_name: op})
             return poll_async_operation(result, self.api.poll_controllers_set_app)
         except cyperf.ApiException as e:
             return handle_api_error(e)

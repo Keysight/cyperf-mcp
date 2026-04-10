@@ -157,8 +157,18 @@ class ResourceTools:
     # ── 1D: Unified search (client-side substring match) ──
 
     _SEARCH_DISPATCH = {
-        "apps":    "get_resources_apps",
-        "attacks": "get_resources_attacks",
+        "apps":      "get_resources_apps",
+        "attacks":   "get_resources_attacks",
+        "app_types": "get_resources_application_types",
+    }
+
+    _APP_TYPE_META_FIELDS = {
+        "supports_calibration": "calibration",
+        "supports_tls": "tls",
+        "supports_strikes": "strikes",
+        "supports_http_profiles": "http_profiles",
+        "supports_client_http_profile": "client_http_profile",
+        "supports_server_http_profile": "server_http_profile",
     }
 
     def search(self, resource_type: str, query: str):
@@ -174,12 +184,24 @@ class ResourceTools:
             for item in all_items:
                 name = getattr(item, 'name', '') or ''
                 desc = getattr(item, 'description', '') or ''
-                if q in name.lower() or q in desc.lower():
-                    matches.append({
-                        "name": name,
-                        "id": getattr(item, 'id', None),
-                        "description": desc,
-                    })
+                if resource_type == "app_types":
+                    # Build searchable string from enabled metadata flags
+                    meta_str = " ".join(
+                        alias for field, alias in self._APP_TYPE_META_FIELDS.items()
+                        if getattr(item, field, False)
+                    )
+                    if q in name.lower() or q in desc.lower() or q in meta_str:
+                        entry = {"name": name, "id": getattr(item, 'id', None)}
+                        for field in self._APP_TYPE_META_FIELDS:
+                            entry[field] = getattr(item, field, False)
+                        matches.append(entry)
+                else:
+                    if q in name.lower() or q in desc.lower():
+                        matches.append({
+                            "name": name,
+                            "id": getattr(item, 'id', None),
+                            "description": desc,
+                        })
             return {"count": len(matches), "matches": matches}
         except cyperf.ApiException as e:
             return handle_api_error(e)
@@ -247,7 +269,7 @@ def register(mcp, client: CyPerfClientManager):
                 List mode: app_types, attack_categories, auth_profiles, captures,
                           tls_certs, custom_fuzzing, payloads, pcaps, http_profiles
                 Get by ID: app, attack, capture, tls_cert
-                Search:    apps, attacks
+                Search:    apps, attacks, app_types (searches name + metadata flags like 'calibration', 'tls')
             resource_id: Get a specific resource by ID (e.g. '192', '2233')
             query: Search string to match against name/description (e.g. 'streaming', 'CVE-2024')
             take: Number of results to return (list mode only)

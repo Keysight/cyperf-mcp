@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "MCP server for Keysight CyPerf network testing platform"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "Proprietary"
+license = "LicenseRef-Proprietary"
 authors = [
     { name = "Partha Majumdar", email = "partha.majumdar@keysight.com" },
     { name = "Keysight Technologies" },

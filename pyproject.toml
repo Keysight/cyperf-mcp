@@ -1,6 +1,6 @@
 [project]
 name = "cyperf-mcp"
-version = "7.0.6"
+version = "7.0.6.post1"
 description = "MCP server for Keysight CyPerf network testing platform"
 readme = "README.md"
 requires-python = ">=3.10"

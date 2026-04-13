@@ -633,7 +633,8 @@ class SessionTools:
             return handle_exception(e)
 
     def set_objective_and_timeline(self, session_id: str, objective_type: str = "SIMULATED_USERS",
-                                   objective_value: int = 100, duration: int = 600,
+                                   objective_value: float = 100, duration: int = 600,
+                                   objective_unit: str | None = None,
                                    ramp_up_duration: int | None = None,
                                    ramp_down_duration: int | None = None):
         """Set test objective and timeline via DynamicModel (mirrors utils.set_objective_and_timeline)."""
@@ -649,6 +650,8 @@ class SessionTools:
                 ):
                     segment.duration = duration
                     segment.objective_value = objective_value
+                    if objective_unit is not None:
+                        segment.objective_unit = objective_unit
                 elif segment.segment_type == cyperf.SegmentType.STEPUPSEGMENT and ramp_up_duration is not None:
                     segment.duration = ramp_up_duration
                 elif segment.segment_type == cyperf.SegmentType.STEPDOWNSEGMENT and ramp_down_duration is not None:
@@ -656,6 +659,8 @@ class SessionTools:
             primary_objective.update()
             result = {"result": "Objective and timeline updated",
                       "type": objective_type, "value": objective_value, "duration": duration}
+            if objective_unit is not None:
+                result["unit"] = objective_unit
             if ramp_up_duration is not None:
                 result["ramp_up_duration"] = ramp_up_duration
             if ramp_down_duration is not None:
@@ -999,22 +1004,25 @@ def register(mcp, client: CyPerfClientManager):
     @mcp.tool()
     def sessions_set_objective_and_timeline(session_id: str,
                                             objective_type: str = "SIMULATED_USERS",
-                                            objective_value: int = 100,
+                                            objective_value: float = 100,
                                             duration: int = 600,
-                                            ramp_up_duration: int | None = None,
-                                            ramp_down_duration: int | None = None) -> dict:
+                                            objective_unit: str = None,
+                                            ramp_up_duration: int = None,
+                                            ramp_down_duration: int = None) -> dict:
         """[Sessions] Set test objective type, value, and duration with optional ramp control.
 
         Args:
             session_id: The session identifier
             objective_type: Objective type (e.g. 'SIMULATED_USERS', 'THROUGHPUT')
-            objective_value: Target value for the objective
+            objective_value: Target value for the objective (supports decimals, e.g. 0.5 for 500 Mbps when unit is Gbps)
             duration: Test duration in seconds (steady state)
-            ramp_up_duration: Ramp-up duration in seconds (StepUpSegment). Use 1 for instant ramp-up.
+            objective_unit: Unit for throughput objectives (e.g. 'Gbps', 'Mbps', 'Kbps'). Only applies to THROUGHPUT type.
+            ramp_up_duration: Ramp-up duration in seconds (StepUpSegment).
             ramp_down_duration: Ramp-down duration in seconds (StepDownSegment).
         """
         return tools.set_objective_and_timeline(session_id, objective_type,
                                                 objective_value, duration,
+                                                objective_unit,
                                                 ramp_up_duration, ramp_down_duration)
 
     # Note: test_init, test_end, prepare_test are available via test_ops tools

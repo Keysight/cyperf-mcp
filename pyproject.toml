@@ -1,6 +1,6 @@
 [project]
 name = "cyperf-mcp"
-version = "7.0.6.post1"
+version = "7.0.6.post2"
 description = "MCP server for Keysight CyPerf network testing platform"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -11,7 +11,7 @@ authors = [
 ]
 keywords = ["mcp", "cyperf", "keysight", "network-testing", "performance-testing", "security-testing"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",
     "License :: Other/Proprietary License",

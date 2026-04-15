@@ -1,5 +1,7 @@
 # CyPerf MCP Server
 
+> **Experimental Release** — This package is under active development. Tool names, parameters, and behaviors may change significantly in future versions without backward compatibility. Do not build production automation on the current API surface without expecting to adapt to breaking changes.
+
 An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that exposes [Keysight CyPerf](https://www.keysight.com/us/en/products/network-test/protocol-load-test/cyperf.html) network performance and security testing functionality as **100 tools** across 15 categories.
 
 AI assistants connected via MCP can orchestrate CyPerf tests, manage agents, analyze results, and perform security testing — all through natural language.

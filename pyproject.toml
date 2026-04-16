@@ -1,10 +1,10 @@
 [project]
 name = "cyperf-mcp"
-version = "7.0.6.post3"
+version = "7.0.6.post4"
 description = "MCP server for Keysight CyPerf network testing platform"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "MIT"
+license = {text = "MIT License (MIT)"}
 authors = [
     { name = "Keysight CyPerf", email = "support@keysight.com" },
 ]
@@ -13,7 +13,6 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",

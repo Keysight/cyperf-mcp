@@ -440,4 +440,4 @@ mcp dev src/cyperf_mcp/cyperf_mcp_server.py
 
 ## License
 
-Proprietary — Keysight Technologies.
+MIT License — Copyright (c) 2025 Keysight Technologies. See [LICENSE](LICENSE) for details.
